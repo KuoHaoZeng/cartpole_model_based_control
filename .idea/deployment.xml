@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="khzeng@127.0.0.1:7777">
+    <serverData>
+      <paths name="khzeng@127.0.0.1:7777">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/khzeng/exp/cartpole_model_based_control" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>
