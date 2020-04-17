@@ -1,4 +1,4 @@
-## Model-Based Cartpole Control
+## Model-Based Cartpole Control (UW CSE571 Guided Project 1)
 
 By Kuo-Hao Zeng, Pengcheng Chen, Mengying Leng, Xiaojuan Wang
 
