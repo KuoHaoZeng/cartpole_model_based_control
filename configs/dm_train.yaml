@@ -13,8 +13,13 @@ framework:
     seed: 0
     num_thread: 1
     num_gpu: 1
+
+model:
+    protocol: resnet18
     batch_size: 128
-    buffer_size: 512
+    input_dim: (3, 300, 300)
+    hidden_size: 512
+    output_size: 6
 
 agent:
     protocol:

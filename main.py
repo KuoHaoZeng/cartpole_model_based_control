@@ -2,6 +2,8 @@ import argparse
 import torch
 from utils.config import Config
 
+from network import network
+
 class Trainer():
     def __init__(self, configs):
 
@@ -13,7 +15,29 @@ class Trainer():
         ### define loss functions
 
         ### model
+        self.model = network.model_CNN(config)
 
+    def save_checkpoints(self):
+        raise NotImplementedError
+
+    def load_checkpoints(self):
+        raise NotImplementedError
+
+    def run(self):
+        raise NotImplementedError
+
+class Tester():
+    def __init__(self, configs):
+
+        ### somethings
+        self.cfg = configs
+
+        ### logging
+
+        ### define loss functions
+
+        ### model
+        self.model = network.model_CNN(config)
 
     def save_checkpoints(self):
         raise NotImplementedError
