@@ -3,6 +3,7 @@ import torch
 from utils.config import Config
 
 from network import network
+from data import dataset
 
 class Trainer():
     def __init__(self, configs):
@@ -56,7 +57,19 @@ def get_configs():
     return config
 
 def main(cfg):
+    state_dataset = dataset.state_dataset(cfg)
+    img_dataset = dataset.image_dataset(cfg)
     trainer = Trainer(cfg)
+
+    #for idx, (s, x, y) in enumerate(state_dataset):
+    #    print("index: {}".format(idx))
+    #    print("current augmented state:")
+    #    print(x.size())
+    #    print("ground truth delta state:")
+    #    print(y.size())
+
+    #for idx, (imgs, s, x, y) in enumerate(img_dataset):
+    #    print("index: {}".format(idx))
 
 if __name__ == '__main__':
     config = get_configs()

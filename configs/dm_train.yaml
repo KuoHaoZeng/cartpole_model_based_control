@@ -10,7 +10,7 @@ checkpoint_dir: "{{base_dir}}/checkpoints"
 checkpoint_file: 00000
 
 framework:
-    seed: 0
+    seed: 12345
     num_thread: 1
     num_gpu: 1
 
@@ -20,6 +20,20 @@ model:
     input_dim: (3, 300, 300)
     hidden_size: 512
     output_size: 6
+
+data:
+    delta_t: 0.05
+    horizon: 50
+    num_datapoints_per_epoch: 50
+    expert_policy: random # {random, swing_up}
+    default_init_state: [0.01, 0.01, 0.5, 0.1] # note that we are going to do init_state[2] * np.pi in the script
+    image:
+        cart_width: 1.0
+        cart_height: 0.5
+        pole_length: 1.0
+        pole_thickness: 3.0
+        figsize: [4, 3]
+        alpha: 0.5
 
 agent:
     protocol:
