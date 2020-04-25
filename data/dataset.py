@@ -6,7 +6,8 @@ from data.policy import SwingUpAndBalancePolicy, RandomPolicy
 from data.cartpole_test import sim_rollout, make_training_data
 from data.visualization import CartpoleVisualizer
 
-protocol = {'random': RandomPolicy, 'swing_up': SwingUpAndBalancePolicy}
+protocol = {"random": RandomPolicy, "swing_up": SwingUpAndBalancePolicy}
+
 
 class state_dataset(Dataset):
     def __init__(self, cfg):
@@ -28,7 +29,9 @@ class state_dataset(Dataset):
 
         # allocate the rollout policy
         # the seed used in HW1 is 12831
-        self.policy = protocol[cfg.data.expert_policy](cfg.framework.seed, cfg.data.policy_dir)
+        self.policy = protocol[cfg.data.expert_policy](
+            cfg.framework.seed, cfg.data.policy_dir
+        )
 
         # allocate the simulator
         self.sim = CartpoleSim(dt=self.delta_t)
@@ -49,30 +52,33 @@ class state_dataset(Dataset):
         # y: a tensor of size [horizon x 4], which indicates output delta state (dim=4)
 
         init_state = self.default_init_state * self.rng.randn(self.state_dim)
-        ts, state_traj, action_traj = sim_rollout(self.sim, self.policy, self.horizon, self.delta_t, init_state)
+        ts, state_traj, action_traj = sim_rollout(
+            self.sim, self.policy, self.horizon, self.delta_t, init_state
+        )
         delta_state_traj = state_traj[1:] - state_traj[:-1]
 
         x, y = make_training_data(state_traj[:-1], action_traj, delta_state_traj)
         s = state_traj.copy()
         return s, x, y
 
+
 class image_dataset(state_dataset):
     def __init__(self, cfg):
         super(image_dataset, self).__init__(cfg)
 
         self.alpha = cfg.data.image.alpha
-        self.vis = CartpoleVisualizer(cfg.data.image.cart_width,
-                                      cfg.data.image.cart_height,
-                                      cfg.data.image.pole_length,
-                                      cfg.data.image.pole_thickness,
-                                      tuple(cfg.data.image.figsize))
+        self.vis = CartpoleVisualizer(
+            cfg.data.image.cart_width,
+            cfg.data.image.cart_height,
+            cfg.data.image.pole_length,
+            cfg.data.image.pole_thickness,
+            tuple(cfg.data.image.figsize),
+        )
 
     def __getitem__(self, index):
         s, x, y = self.generate_data()
         imgs = []
         for h in range(self.horizon):
-            img = self.vis.draw_cartpole("", s[h,3], s[h,2], self.alpha)
+            img = self.vis.draw_cartpole("", s[h, 3], s[h, 2], self.alpha)
             imgs.append(img)
         return torch.Tensor(imgs), torch.Tensor(s), torch.Tensor(x), torch.Tensor(y)
-
-

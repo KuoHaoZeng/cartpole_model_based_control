@@ -2,10 +2,10 @@
 import os
 from ruamel import yaml
 
-class AttrDict(dict):
-    """Dict as attribute trick.
 
-    """
+class AttrDict(dict):
+    """Dict as attribute trick."""
+
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
@@ -20,9 +20,7 @@ class AttrDict(dict):
                     self.__dict__[key] = value
 
     def yaml(self):
-        """Convert object to yaml dict and return.
-
-        """
+        """Convert object to yaml dict and return."""
         yaml_dict = {}
         for key in self.__dict__:
             value = self.__dict__[key]
@@ -41,30 +39,28 @@ class AttrDict(dict):
         return yaml_dict
 
     def __repr__(self):
-        """Print all variables.
-
-        """
+        """Print all variables."""
         ret_str = []
         for key in self.__dict__:
             value = self.__dict__[key]
             if isinstance(value, AttrDict):
-                ret_str.append('{}:'.format(key))
-                child_ret_str = value.__repr__().split('\n')
+                ret_str.append("{}:".format(key))
+                child_ret_str = value.__repr__().split("\n")
                 for item in child_ret_str:
-                    ret_str.append('    ' + item)
+                    ret_str.append("    " + item)
             elif isinstance(value, list):
                 if isinstance(value[0], AttrDict):
-                    ret_str.append('{}:'.format(key))
+                    ret_str.append("{}:".format(key))
                     for item in value:
                         # treat as AttrDict above
-                        child_ret_str = item.__repr__().split('\n')
+                        child_ret_str = item.__repr__().split("\n")
                         for item in child_ret_str:
-                            ret_str.append('    ' + item)
+                            ret_str.append("    " + item)
                 else:
-                    ret_str.append('{}: {}'.format(key, value))
+                    ret_str.append("{}: {}".format(key, value))
             else:
-                ret_str.append('{}: {}'.format(key, value))
-        return '\n'.join(ret_str)
+                ret_str.append("{}: {}".format(key, value))
+        return "\n".join(ret_str)
 
 
 class Config(AttrDict):
@@ -95,13 +91,12 @@ class Config(AttrDict):
             1.0
         >>> print(config.DATASET)
             /mnt/data/imagenet
-
     """
 
     def __init__(self, filename=None):
-        assert os.path.exists(filename), 'File {} not exist.'.format(filename)
+        assert os.path.exists(filename), "File {} not exist.".format(filename)
         try:
-            with open(filename, 'r') as f:
+            with open(filename, "r") as f:
                 cfg_dict = yaml.safe_load(f)
         except EnvironmentError:
             print('Please check the file with name of "%s"', filename)
@@ -125,7 +120,9 @@ class Config(AttrDict):
                         if target_key in self.all_keys:
                             pos_remain = "}}".join(v.split("}}")[1:])
                             pre_remain = v.split("{{")[0]
-                            v = "{}{}{}".format(pre_remain, self.org_dict[target_key], pos_remain)
+                            v = "{}{}{}".format(
+                                pre_remain, self.org_dict[target_key], pos_remain
+                            )
                         else:
                             raise KeyError
             output_dict[k] = v

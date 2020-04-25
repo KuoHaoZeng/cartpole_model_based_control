@@ -9,7 +9,8 @@ from utils.config import Config
 from network import network
 from data import dataset
 
-class Trainer():
+
+class Trainer:
     def __init__(self, configs):
 
         ### somethings
@@ -31,19 +32,32 @@ class Trainer():
     def run(self):
         raise NotImplementedError
 
-class Trainer_policy():
+
+class Trainer_policy:
     def __init__(self, configs):
 
         ### somethings
         self.cfg = configs
         self.dataset = dataset.state_dataset(configs)
-        self.dataloader = torch.utils.data.DataLoader(self.dataset,
-                                                      batch_size=config.data.batch_size,
-                                                      num_workers=4,
-                                                      )
-        widgets = ['Training phase [', progressbar.SimpleProgress(), '] [', progressbar.Percentage(), '] ',
-                   progressbar.Bar(marker='█'), ' (', progressbar.Timer(), ' ', progressbar.ETA(), ') ', ]
-        self.bar = progressbar.ProgressBar(max_value=config.train.num_epoch, widgets=widgets, term_width=100)
+        self.dataloader = torch.utils.data.DataLoader(
+            self.dataset, batch_size=config.data.batch_size, num_workers=4,
+        )
+        widgets = [
+            "Training phase [",
+            progressbar.SimpleProgress(),
+            "] [",
+            progressbar.Percentage(),
+            "] ",
+            progressbar.Bar(marker="█"),
+            " (",
+            progressbar.Timer(),
+            " ",
+            progressbar.ETA(),
+            ") ",
+        ]
+        self.bar = progressbar.ProgressBar(
+            max_value=config.train.num_epoch, widgets=widgets, term_width=100
+        )
         self.best_loss = sys.maxsize
 
         ### logging
@@ -58,17 +72,17 @@ class Trainer_policy():
             self.policy.to(device=0)
 
         self.optimizer = optim.Adam(self.policy.parameters(), lr=config.train.lr)
-        self.scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer,
-                                                        milestones=config.train.lr_ms,
-                                                        gamma=0.1)
+        self.scheduler = optim.lr_scheduler.MultiStepLR(
+            self.optimizer, milestones=config.train.lr_ms, gamma=0.1
+        )
 
     def save_checkpoints(self, losses, avg_period=5):
         if not os.path.isdir(self.cfg.checkpoint_dir):
             os.makedirs(self.cfg.checkpoint_dir)
 
         sd = {}
-        sd['parameters'] = self.policy.state_dict()
-        sd['epoch'] = len(losses)
+        sd["parameters"] = self.policy.state_dict()
+        sd["epoch"] = len(losses)
         checkpoint_dir = "{}/{:05d}.pt".format(self.cfg.checkpoint_dir, len(losses))
         torch.save(sd, checkpoint_dir)
 
@@ -79,9 +93,11 @@ class Trainer_policy():
             self.best_loss = loss
 
     def load_checkpoints(self):
-        sd = torch.load("{}/{}.pt".format(self.cfg.checkpoint_dir, self.cfg.checkpoint_file),
-                        map_location=torch.device('cpu'))
-        self.policy.load_state_dict(sd['parameters'])
+        sd = torch.load(
+            "{}/{}.pt".format(self.cfg.checkpoint_dir, self.cfg.checkpoint_file),
+            map_location=torch.device("cpu"),
+        )
+        self.policy.load_state_dict(sd["parameters"])
 
     def run(self):
         losses = []
@@ -106,7 +122,11 @@ class Trainer_policy():
                 self.scheduler.step()
 
                 # log
-                self.logger.add_scalar("{}/loss".format(self.cfg.mode), l.data, idx + self.cfg.train.num_epoch * epoch)
+                self.logger.add_scalar(
+                    "{}/loss".format(self.cfg.mode),
+                    l.data,
+                    idx + self.cfg.train.num_epoch * epoch,
+                )
                 losses.append(l.detach().cpu().numpy())
 
             if epoch % self.cfg.train.save_iter == 0:
@@ -115,7 +135,7 @@ class Trainer_policy():
         print("finish!")
 
 
-class Tester():
+class Tester:
     def __init__(self, configs):
 
         ### somethings
@@ -137,6 +157,7 @@ class Tester():
     def run(self):
         raise NotImplementedError
 
+
 def get_configs():
     parser = argparse.ArgumentParser(description="We are the best!!!")
     parser.add_argument("--config", type=str, default="configs/train.yaml")
@@ -144,10 +165,12 @@ def get_configs():
     config = Config(args.config)
     return config
 
+
 def main(cfg):
     trainer = Trainer_policy(cfg)
     trainer.run()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     config = get_configs()
     main(config)
