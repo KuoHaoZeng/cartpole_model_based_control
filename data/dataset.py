@@ -27,7 +27,8 @@ class state_dataset(Dataset):
         self.aug_state_dim = 6
 
         # allocate the rollout policy
-        self.policy = protocol[cfg.data.expert_policy](cfg.framework.seed) # the seed used in HW1 is 12831
+        # the seed used in HW1 is 12831
+        self.policy = protocol[cfg.data.expert_policy](cfg.framework.seed, cfg.data.policy_dir)
 
         # allocate the simulator
         self.sim = CartpoleSim(dt=self.delta_t)

@@ -2,7 +2,7 @@ import numpy as np
 
 
 class SwingUpAndBalancePolicy(object):
-    def __init__(self, weights_file):
+    def __init__(self, seed, weights_file):
         d = np.load(weights_file)
         self.fc1_w = d['fc1_w']
         self.fc1_b = d['fc1_b']
@@ -29,7 +29,7 @@ class SwingUpAndBalancePolicy(object):
 
 
 class RandomPolicy(object):
-    def __init__(self, seed):
+    def __init__(self, seed, weights_file):
         self.rng = np.random.RandomState(seed)
 
     def predict(self, state):
