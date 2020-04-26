@@ -15,8 +15,8 @@ framework:
     num_gpu: 1
 
 model:
-    protocol: state # state image
-    backbone: gru # fc, gru
+    protocol: state # {state, image}
+    backbone: gru # {fc, gru, lstm}
     hidden_dim: 64
 
 data:

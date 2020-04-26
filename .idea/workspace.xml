@@ -5,8 +5,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/configs/dm_train.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/dm_train.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/configs/policy_train.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/policy_train.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/network.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -115,7 +113,7 @@
       <workItem from="1587081763654" duration="8755000" />
       <workItem from="1587711722608" duration="7352000" />
       <workItem from="1587806877486" duration="9564000" />
-      <workItem from="1587889423844" duration="2196000" />
+      <workItem from="1587889423844" duration="2673000" />
     </task>
     <servers />
   </component>

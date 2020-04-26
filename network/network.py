@@ -41,6 +41,28 @@ class basic_GRU(nn.Module):
         return x
 
 
+class basic_LSTM(nn.Module):
+    def __init__(
+            self, input_dim, output_dim, hidden_dim, activation_func=nn.Tanh, num_layers=1
+    ):
+        super(basic_LSTM, self).__init__()
+
+        self.num_layers = num_layers
+        self.hidden_dim = hidden_dim
+        self.linear_in = nn.Linear(input_dim, hidden_dim)
+        self.linear_out = nn.Linear(hidden_dim, output_dim)
+        self.lstm = nn.LSTM(hidden_dim, hidden_dim, num_layers, batch_first=True)
+        self.activation = activation_func()
+
+    def forward(self, x):
+        x = self.activation(self.linear_in(x))
+        h0 = torch.zeros((self.num_layers, x.shape[0], self.hidden_dim)).to(x.device)
+        c0 = torch.zeros((self.num_layers, x.shape[0], self.hidden_dim)).to(x.device)
+        x, (hn, cn) = self.lstm(x, (h0, c0))
+        x = self.linear_out(self.activation(x))
+        return x
+
+
 class model_CNN(nn.Module):
     def __init__(self, cfg):
         super(model_CNN, self).__init__()
@@ -92,4 +114,5 @@ backbone = {
     "mobilenet": mobilenet_v2,
     "fc": basic_MLP,
     "gru": basic_GRU,
+    "lstm": basic_LSTM,
 }
