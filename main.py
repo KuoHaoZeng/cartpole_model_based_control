@@ -9,36 +9,15 @@ from utils.config import Config
 from network import network
 from data import dataset
 
+protocol = {'state': network.model_basic, 'image': network.model_CNN}
+dataset_protocol = {'state': dataset.state_dataset, 'image': dataset.image_dataset}
 
-class Trainer:
+class Trainer():
     def __init__(self, configs):
 
         ### somethings
         self.cfg = configs
-
-        ### logging
-
-        ### define loss functions
-
-        ### model
-        self.model = network.model_CNN(config)
-
-    def save_checkpoints(self):
-        raise NotImplementedError
-
-    def load_checkpoints(self):
-        raise NotImplementedError
-
-    def run(self):
-        raise NotImplementedError
-
-
-class Trainer_policy:
-    def __init__(self, configs):
-
-        ### somethings
-        self.cfg = configs
-        self.dataset = dataset.state_dataset(configs)
+        self.dataset = dataset_protocol[configs.data.protocol](configs)
         self.dataloader = torch.utils.data.DataLoader(
             self.dataset, batch_size=config.data.batch_size, num_workers=4,
         )
@@ -63,15 +42,12 @@ class Trainer_policy:
         ### logging
         self.logger = SummaryWriter("{}/runs_{}".format(config.base_dir, config.mode))
 
-        ### define loss functions
-        self.criterion = nn.L1Loss()
-
         ### model
-        self.policy = network.policy_state_basic(config)
+        self.model = protocol[config.model.protocol](config)
         if config.framework.num_gpu > 0:
-            self.policy.to(device=0)
+            self.model.to(device=0)
 
-        self.optimizer = optim.Adam(self.policy.parameters(), lr=config.train.lr)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=config.train.lr)
         self.scheduler = optim.lr_scheduler.MultiStepLR(
             self.optimizer, milestones=config.train.lr_ms, gamma=0.1
         )
@@ -80,9 +56,7 @@ class Trainer_policy:
         if not os.path.isdir(self.cfg.checkpoint_dir):
             os.makedirs(self.cfg.checkpoint_dir)
 
-        sd = {}
-        sd["parameters"] = self.policy.state_dict()
-        sd["epoch"] = len(losses)
+        sd = {"parameters": self.policy.state_dict(), "epoch": len(losses)}
         checkpoint_dir = "{}/{:05d}.pt".format(self.cfg.checkpoint_dir, len(losses))
         torch.save(sd, checkpoint_dir)
 
@@ -98,6 +72,19 @@ class Trainer_policy:
             map_location=torch.device("cpu"),
         )
         self.policy.load_state_dict(sd["parameters"])
+
+    def run(self):
+        raise NotImplementedError
+
+class Trainer_policy(Trainer):
+    def __init__(self, configs):
+        super(Trainer_policy, self).__init__(configs)
+
+        ### define loss functions
+        self.criterion = nn.L1Loss()
+
+        ### model
+        self.policy = self.model
 
     def run(self):
         losses = []

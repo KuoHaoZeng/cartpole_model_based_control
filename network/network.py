@@ -48,17 +48,17 @@ class model_CNN(nn.Module):
         return x
 
 
-class policy_state_basic(nn.Module):
+class model_basic(nn.Module):
     def __init__(self, cfg):
-        super(policy_state_basic, self).__init__()
+        super(model_basic, self).__init__()
         self.cfg = cfg
         self.batch_size = cfg.data.num_datapoints_per_epoch
         self.horizon = cfg.data.horizon
         self.input_dim = cfg.data.input_dim
         self.output_dim = cfg.data.output_dim
-        self.hidden_dim = cfg.policy.hidden_dim
+        self.hidden_dim = cfg.model.hidden_dim
 
-        self.backbone = backbone[cfg.policy.backbone](
+        self.backbone = backbone[cfg.model.backbone](
             self.input_dim, self.output_dim, self.hidden_dim
         )
 

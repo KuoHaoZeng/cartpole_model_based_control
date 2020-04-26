@@ -16,15 +16,11 @@ framework:
 
 model:
     protocol: state
-    backbone: resnet18
-    hidden_dim: 512
-
-policy:
-    protocol: state
     backbone: fc
     hidden_dim: 64
 
 data:
+    protocol: state
     delta_t: 0.05
     horizon: 50
     input_dim: 5
