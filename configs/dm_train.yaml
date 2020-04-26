@@ -15,9 +15,9 @@ framework:
     num_gpu: 1
 
 model:
-    protocol: state
-    backbone: resnet18
-    hidden_dim: 512
+    protocol: state # state image
+    backbone: gru # fc, gru
+    hidden_dim: 64
 
 data:
     protocol: state
@@ -40,6 +40,6 @@ data:
 
 train:
     num_epoch: 100
-    lr: 0.001
+    lr: 0.01
     lr_ms: [70, 90]
     save_iter: 10

@@ -20,6 +20,27 @@ class basic_MLP(nn.Module):
         return self.backbone(x)
 
 
+class basic_GRU(nn.Module):
+    def __init__(
+        self, input_dim, output_dim, hidden_dim, activation_func=nn.Tanh, num_layers=1
+    ):
+        super(basic_GRU, self).__init__()
+
+        self.num_layers = num_layers
+        self.hidden_dim = hidden_dim
+        self.linear_in = nn.Linear(input_dim, hidden_dim)
+        self.linear_out = nn.Linear(hidden_dim, output_dim)
+        self.gru = nn.GRU(hidden_dim, hidden_dim, num_layers, batch_first=True)
+        self.activation = activation_func()
+
+    def forward(self, x):
+        x = self.activation(self.linear_in(x))
+        h0 = torch.zeros((self.num_layers, x.shape[0], self.hidden_dim)).to(x.device)
+        x, hn = self.gru(x, h0)
+        x = self.linear_out(self.activation(x))
+        return x
+
+
 class model_CNN(nn.Module):
     def __init__(self, cfg):
         super(model_CNN, self).__init__()
@@ -48,9 +69,9 @@ class model_CNN(nn.Module):
         return x
 
 
-class model_basic(nn.Module):
+class model_state(nn.Module):
     def __init__(self, cfg):
-        super(model_basic, self).__init__()
+        super(model_state, self).__init__()
         self.cfg = cfg
         self.batch_size = cfg.data.num_datapoints_per_epoch
         self.horizon = cfg.data.horizon
@@ -63,8 +84,12 @@ class model_basic(nn.Module):
         )
 
     def forward(self, x):
-        x = x.view(self.batch_size * self.horizon, self.input_dim)
         return self.backbone(x)
 
 
-backbone = {"resnet18": resnet18, "mobilenet": mobilenet_v2, "fc": basic_MLP}
+backbone = {
+    "resnet18": resnet18,
+    "mobilenet": mobilenet_v2,
+    "fc": basic_MLP,
+    "gru": basic_GRU,
+}

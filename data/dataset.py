@@ -41,7 +41,7 @@ class state_dataset(Dataset):
 
     def __getitem__(self, index):
         s, x, y = self.generate_data()
-        return torch.Tensor(s), torch.Tensor(x), torch.Tensor(y)
+        return torch.Tensor(s), torch.Tensor(s), torch.Tensor(x), torch.Tensor(y)
 
     def generate_data(self):
         # normal state: [dtheta, dp, theta, p]
