@@ -222,8 +222,9 @@ class Tester_dynamic_model(Tester):
             if self.cfg.framework.num_gpu > 0:
                 inp = inp.to(device=0)
 
-            state = dm_model(inp)
-            state = state.detach().cpu().numpy()
+            delta_state = dm_model(inp)
+            delta_state = delta_state.detach().cpu().numpy()
+            state = state + delta_state
         states.append(state)
         time = np.arange(n_step + 1) * dt
         return time, np.array(states)
