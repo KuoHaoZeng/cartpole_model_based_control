@@ -28,8 +28,8 @@ data:
     batch_size: 50
     num_datapoints_per_epoch: 50
     num_traj_samples: 10
-    expert_policy: random # {random, swing_up}
-    policy_dir: ''
+    expert_policy: swing_up # {random, swing_up}
+    policy_dir: 'data/policy.npz'
     default_init_state: [0.01, 0.01, 0.5, 0.1] # note that we are going to do init_state[2] * np.pi in the script
     image:
         cart_width: 1.0
@@ -46,6 +46,6 @@ train:
     save_iter: 10
 
 test:
-    gt_title: Full-Dynamics Prediction
+    gt_title: Swing-up sim rollout
     model_title: NN Prediction
     film: True

@@ -23,6 +23,9 @@ if __name__ == "__main__":
         "policy": trainer.Trainer_policy,
         "dm": trainer.Trainer_dynamic_model,
     }
-    tester_protocol = {"policy": tester.Tester_policy}
+    tester_protocol = {
+        "policy": tester.Tester_policy,
+        "dm": tester.Tester_dynamic_model,
+    }
     config = get_configs()
     main(config)
