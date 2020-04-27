@@ -430,7 +430,14 @@ class InfoPanel(object):
 
 
 class Visualizer(object):
-    def __init__(self, cartpole_length=1.0, x_lim=(0.0, 1.0), figsize=(6, 8)):
+    def __init__(
+        self,
+        cartpole_length=1.0,
+        x_lim=(0.0, 1.0),
+        figsize=(6, 8),
+        gt_title="Full-Dynamics Prediction",
+        model_title="GP-Dynamics Prediction",
+    ):
         fig, axs = plt.subplots(
             nrows=4, ncols=1, sharex=True, figsize=figsize, tight_layout=True
         )
@@ -465,13 +472,13 @@ class Visualizer(object):
         self.cartpole_length = cartpole_length
 
         self.cartpole_vis_gt = CartpoleVisualizer(
-            pole_length=cartpole_length,
-            title="Full-Dynamics Prediction",
-            figsize=(4, 3),
+            pole_length=cartpole_length, title=gt_title, figsize=(4, 3),
         )
         self.cartpole_vis_gp = CartpoleVisualizer(
-            pole_length=cartpole_length, title="GP-Dynamics Prediction", figsize=(4, 3)
+            pole_length=cartpole_length, title=model_title, figsize=(4, 3)
         )
+        self.gt_title = gt_title
+        self.model_title = model_title
 
         self.info_panel = InfoPanel(figsize=(4, 2))
 
@@ -573,7 +580,7 @@ class Visualizer(object):
         if redraw:
             self.legend = self.axs[-1].legend(
                 [gt_handles[-1], gp_handles[-1]],
-                ["Full-Dynamics", "GP-Dynamics"],
+                [self.gt_title, self.model_title],
                 loc="upper center",
                 bbox_to_anchor=(0.5, -0.4),
                 ncol=2,

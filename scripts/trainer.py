@@ -89,11 +89,11 @@ class Trainer_policy(Trainer):
             for idx, (imgs, s, x, y) in enumerate(self.dataloader):
                 if self.cfg.framework.num_gpu > 0:
                     s, x, y = s.to(device=0), x.to(device=0), y.to(device=0)
-                    y_action = x[:, :, -1]
-                    x = x[:, :, :-1]
+                y_action = x[:, :, -1]
+                x = x[:, :, :-1]
 
                 # forward
-                p = self.model(x)
+                p, _ = self.model(x)
                 p = p.view_as(y_action)
 
                 # loss
@@ -134,7 +134,7 @@ class Trainer_dynamic_model(Trainer):
                     s, x, y = s.to(device=0), x.to(device=0), y.to(device=0)
 
                 # forward
-                p = self.model(x)
+                p, _ = self.model(x)
                 p = p.view_as(y)
 
                 # loss

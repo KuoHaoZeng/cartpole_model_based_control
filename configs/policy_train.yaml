@@ -27,6 +27,7 @@ data:
     output_dim: 1
     batch_size: 50
     num_datapoints_per_epoch: 50
+    num_traj_samples: 10
     expert_policy: swing_up # {random, swing_up}
     policy_dir: 'data/policy.npz'
     default_init_state: [0.01, 0.01, 0.5, 0.1] # note that we are going to do init_state[2] * np.pi in the script
@@ -43,3 +44,8 @@ train:
     lr: 0.01
     lr_ms: [70, 90]
     save_iter: 10
+
+test:
+    gt_title: swing_up
+    model_title: behavior_cloning
+    film: True

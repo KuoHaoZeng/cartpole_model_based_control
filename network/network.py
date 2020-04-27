@@ -16,8 +16,8 @@ class basic_MLP(nn.Module):
             nn.Linear(hidden_dim, output_dim),
         )
 
-    def forward(self, x):
-        return self.backbone(x)
+    def forward(self, x, m):
+        return self.backbone(x), m
 
 
 class basic_GRU(nn.Module):
@@ -33,17 +33,20 @@ class basic_GRU(nn.Module):
         self.gru = nn.GRU(hidden_dim, hidden_dim, num_layers, batch_first=True)
         self.activation = activation_func()
 
-    def forward(self, x):
+    def forward(self, x, h0):
         x = self.activation(self.linear_in(x))
-        h0 = torch.zeros((self.num_layers, x.shape[0], self.hidden_dim)).to(x.device)
+        if isinstance(h0, None):
+            h0 = torch.zeros((self.num_layers, x.shape[0], self.hidden_dim)).to(
+                x.device
+            )
         x, hn = self.gru(x, h0)
         x = self.linear_out(self.activation(x))
-        return x
+        return x, hn
 
 
 class basic_LSTM(nn.Module):
     def __init__(
-            self, input_dim, output_dim, hidden_dim, activation_func=nn.Tanh, num_layers=1
+        self, input_dim, output_dim, hidden_dim, activation_func=nn.Tanh, num_layers=1
     ):
         super(basic_LSTM, self).__init__()
 
@@ -54,13 +57,21 @@ class basic_LSTM(nn.Module):
         self.lstm = nn.LSTM(hidden_dim, hidden_dim, num_layers, batch_first=True)
         self.activation = activation_func()
 
-    def forward(self, x):
+    def forward(self, x, m):
         x = self.activation(self.linear_in(x))
-        h0 = torch.zeros((self.num_layers, x.shape[0], self.hidden_dim)).to(x.device)
-        c0 = torch.zeros((self.num_layers, x.shape[0], self.hidden_dim)).to(x.device)
+        if isinstance(m, tuple):
+            h0 = m[0]
+            c0 = m[1]
+        else:
+            h0 = torch.zeros((self.num_layers, x.shape[0], self.hidden_dim)).to(
+                x.device
+            )
+            c0 = torch.zeros((self.num_layers, x.shape[0], self.hidden_dim)).to(
+                x.device
+            )
         x, (hn, cn) = self.lstm(x, (h0, c0))
         x = self.linear_out(self.activation(x))
-        return x
+        return x, (hn, cn)
 
 
 class model_CNN(nn.Module):
@@ -105,8 +116,8 @@ class model_state(nn.Module):
             self.input_dim, self.output_dim, self.hidden_dim
         )
 
-    def forward(self, x):
-        return self.backbone(x)
+    def forward(self, x, m=None):
+        return self.backbone(x, m)
 
 
 backbone = {

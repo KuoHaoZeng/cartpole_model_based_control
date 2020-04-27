@@ -12,11 +12,17 @@ def get_configs():
 
 
 def main(cfg):
-    worker = protocol[cfg.exp_prefix](cfg)
+    worker = trainer_protocol[cfg.exp_prefix](cfg)
+    worker.run()
+    worker = tester_protocol[cfg.exp_prefix](cfg)
     worker.run()
 
 
 if __name__ == "__main__":
-    protocol = {"policy": trainer.Trainer_policy, "dm": trainer.Trainer_dynamic_model}
+    trainer_protocol = {
+        "policy": trainer.Trainer_policy,
+        "dm": trainer.Trainer_dynamic_model,
+    }
+    tester_protocol = {"policy": tester.Tester_policy}
     config = get_configs()
     main(config)

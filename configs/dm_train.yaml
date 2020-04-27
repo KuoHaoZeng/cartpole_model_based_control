@@ -27,6 +27,7 @@ data:
     output_dim: 4
     batch_size: 50
     num_datapoints_per_epoch: 50
+    num_traj_samples: 10
     expert_policy: random # {random, swing_up}
     policy_dir: ''
     default_init_state: [0.01, 0.01, 0.5, 0.1] # note that we are going to do init_state[2] * np.pi in the script
@@ -43,3 +44,8 @@ train:
     lr: 0.01
     lr_ms: [70, 90]
     save_iter: 10
+
+test:
+    gt_title: Full-Dynamics Prediction
+    model_title: NN Prediction
+    film: True
