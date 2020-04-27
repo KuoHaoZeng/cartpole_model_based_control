@@ -221,8 +221,11 @@ class Tester_dynamic_model(Tester):
             inp = torch.Tensor(inp).unsqueeze(0).unsqueeze(0)
             if self.cfg.framework.num_gpu > 0:
                 inp = inp.to(device=0)
-
-            delta_state = dm_model(inp)
+            if i == 0:
+                delta_state, h = dm(inp)
+            else:
+                delta_state, h = dm(inp, h)
+                
             delta_state = delta_state.detach().cpu().numpy()
             state = state + delta_state
         states.append(state)

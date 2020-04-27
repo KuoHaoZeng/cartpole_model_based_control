@@ -35,7 +35,7 @@ class basic_GRU(nn.Module):
 
     def forward(self, x, h0):
         x = self.activation(self.linear_in(x))
-        if isinstance(h0, None):
+        if h0 == None:
             h0 = torch.zeros((self.num_layers, x.shape[0], self.hidden_dim)).to(
                 x.device
             )
