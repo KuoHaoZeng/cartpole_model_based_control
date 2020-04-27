@@ -226,13 +226,13 @@ class Tester_dynamic_model(Tester):
             else:
                 delta_state, h = dm(inp, h)
                 
-            delta_state = delta_state.detach().cpu().numpy()
+            delta_state = delta_state.detach().cpu().numpy()[0,0,:]
             state = state + delta_state
         states.append(state)
         time = np.arange(n_step + 1) * dt
         return time, np.array(states)
 
-    def augmented_state(state, action):
+    def augmented_state(self,state, action):
         """
         :param state: cartpole state
         :param action: action applied to state
