@@ -114,7 +114,7 @@ class Trainer_policy(Trainer):
                 self.logger.add_scalar(
                     "{}/loss".format(self.cfg.mode),
                     l.data,
-                    idx + (self.cfg.data.num_datapoints_per_epoch / self.data.batch_size) * epoch,
+                    idx + (self.cfg.data.num_datapoints_per_epoch / self.cfg.data.batch_size) * epoch,
                 )
                 losses.append(l.detach().cpu().numpy())
 
@@ -161,7 +161,7 @@ class Trainer_dynamic_model(Trainer):
                 self.logger.add_scalar(
                     "{}/loss".format(self.cfg.mode),
                     l.data,
-                    idx + (self.cfg.data.num_datapoints_per_epoch/self.data.batch_size) * epoch,
+                    idx + (self.cfg.data.num_datapoints_per_epoch/self.cfg.data.batch_size) * epoch,
                 )
                 losses.append(l.detach().cpu().numpy())
 

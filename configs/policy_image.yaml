@@ -30,7 +30,7 @@ data:
     input_dim: "{{model.hidden_dim}}"
     input_cnn_dim: [3, 256, 256]
     output_dim: 1
-    batch_size: 50
+    batch_size: 10
     num_datapoints_per_epoch: 50
     num_traj_samples: 10
     expert_policy: swing_up # {random, swing_up}

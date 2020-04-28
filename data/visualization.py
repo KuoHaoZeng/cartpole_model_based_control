@@ -392,13 +392,17 @@ class CartpoleVisualizer(object):
         return self._get_image()
 
     def draw_cartpole_batch(self, names, xs, thetas, alphas):
-        #self.fig.canvas.restore_region(self.background)
+        self.fig.canvas.restore_region(self.background)
+        for name, x, theta, alpha in zip(names, xs, thetas, alphas):
+            self._draw_cartpole_helper(name, x, theta, alpha)
+        return self._get_image()
+
+    def draw_cartpole_batch_for_dataset(self, names, xs, thetas, alphas):
         imgs = []
         for name, x, theta, alpha in zip(names, xs, thetas, alphas):
             self.fig.canvas.restore_region(self.background)
             self._draw_cartpole_helper(name, x, theta, alpha)
             imgs.append(self._get_image())
-        #return self._get_image()
         return imgs
 
 

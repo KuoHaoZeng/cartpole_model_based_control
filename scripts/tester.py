@@ -44,8 +44,9 @@ class Tester:
         self.load_checkpoints()
         if config.framework.num_gpu > 0:
             self.model.to(device=0)
-        if config.model.backbone[0] != "d":
-            self.model.eval()
+        self.model.eval()
+        if config.model.backbone.startswith("d"):
+            self.turn_on_dropout()
 
         ### visualization
         self.vis = Visualizer(
@@ -55,6 +56,11 @@ class Tester:
             gt_title=config.test.gt_title,
             model_title=config.test.model_title,
         )
+
+    def turn_on_dropout(self):
+        for m in self.model.modules():
+            if m.__class__.__name__.startswith("Dropout"):
+                m.train()
 
     def load_checkpoints(self):
         sd = torch.load(
@@ -80,21 +86,22 @@ class Tester_policy(Tester):
         actions = []
         for i in range(n_step):
             states.append(state)
-            if isinstance(self.dataset, dataset.image_dataset):
-                inp = imgs[i].unsqueeze(0).unsqueeze(0)
-                if i == 0:
-                    action, h = policy(inp)
+            with torch.no_grad():
+                if isinstance(self.dataset, dataset.image_dataset):
+                    inp = imgs[i].unsqueeze(0).unsqueeze(0)
+                    if i == 0:
+                        action, h = policy(inp)
+                    else:
+                        action, h = policy(inp, h)
                 else:
-                    action, h = policy(inp, h)
-            else:
-                inp = self.augmented_state(state)
-                inp = torch.Tensor(inp).unsqueeze(0).unsqueeze(0)
-                if self.cfg.framework.num_gpu > 0:
-                    inp = inp.to(device=0)
-                if i == 0:
-                    action, m = policy(inp)
-                else:
-                    action, m = policy(inp, m)
+                    inp = self.augmented_state(state)
+                    inp = torch.Tensor(inp).unsqueeze(0).unsqueeze(0)
+                    if self.cfg.framework.num_gpu > 0:
+                        inp = inp.to(device=0)
+                    if i == 0:
+                        action, m = policy(inp)
+                    else:
+                        action, m = policy(inp, m)
             action = action.detach().cpu().numpy()
             actions.append(action)
             state = sim.step(state, [action], noisy=True)
@@ -123,10 +130,11 @@ class Tester_policy(Tester):
             x = x[:, :, :-1]
 
             # forward
-            if isinstance(self.dataset, dataset.image_dataset):
-                p, _ = self.model(imgs)
-            else:
-                p, _ = self.model(x)
+            with torch.no_grad():
+                if isinstance(self.dataset, dataset.image_dataset):
+                    p, _ = self.model(imgs)
+                else:
+                    p, _ = self.model(x)
             p = p.view_as(y_action)
 
             # loss
@@ -194,7 +202,7 @@ class Tester_policy(Tester):
 
                         self.vis.set_info_text(
                             "trajectory: {}\npolicy model: {}".format(
-                                j, self.cfg.model.backbone
+                                1 + j + idx * self.cfg.data.batch_size, self.cfg.model.backbone
                             )
                         )
                         vis_img = self.vis.draw(redraw=(i == 0))
@@ -202,8 +210,8 @@ class Tester_policy(Tester):
 
                         if idx == 0 and j == 0 and i == 0:
                             video_out = cv2.VideoWriter(
-                                "{}/{}_policy_batch_{}.mp4".format(
-                                    self.cfg.base_dir, self.cfg.checkpoint_file, j+1
+                                "{}/{}_policy.mp4".format(
+                                    self.cfg.base_dir, self.cfg.checkpoint_file
                                 ),
                                 cv2.VideoWriter_fourcc("m", "p", "4", "v"),
                                 int(1.0 / self.cfg.data.delta_t),
@@ -234,24 +242,25 @@ class Tester_dynamic_model(Tester):
         state = init_state
         for i in range(n_step):
             states.append(state)
-            if isinstance(self.dataset, dataset.image_dataset):
-                inp = imgs[i].unsqueeze(0).unsqueeze(0)
-                x = torch.Tensor([actions[i]]).unsqueeze(0)
-                if self.cfg.framework.num_gpu > 0:
-                    x = x.to(device=0)
-                if i == 0:
-                    delta_state, h = dm(inp, x)
+            with torch.no_grad():
+                if isinstance(self.dataset, dataset.image_dataset):
+                    inp = imgs[i].unsqueeze(0).unsqueeze(0)
+                    x = torch.Tensor([actions[i]]).unsqueeze(0)
+                    if self.cfg.framework.num_gpu > 0:
+                        x = x.to(device=0)
+                    if i == 0:
+                        delta_state, h = dm(inp, x)
+                    else:
+                        delta_state, h = dm(inp, x, h)
                 else:
-                    delta_state, h = dm(inp, x, h)
-            else:
-                inp = self.augmented_state(state, actions[i])
-                inp = torch.Tensor(inp).unsqueeze(0).unsqueeze(0)
-                if self.cfg.framework.num_gpu > 0:
-                    inp = inp.to(device=0)
-                if i == 0:
-                    delta_state, h = dm(inp)
-                else:
-                    delta_state, h = dm(inp, h)
+                    inp = self.augmented_state(state, actions[i])
+                    inp = torch.Tensor(inp).unsqueeze(0).unsqueeze(0)
+                    if self.cfg.framework.num_gpu > 0:
+                        inp = inp.to(device=0)
+                    if i == 0:
+                        delta_state, h = dm(inp)
+                    else:
+                        delta_state, h = dm(inp, h)
 
             delta_state = delta_state.detach().cpu().numpy()[0, 0, :]
             state = state + delta_state
@@ -279,10 +288,11 @@ class Tester_dynamic_model(Tester):
 
             gt_action = x[:, :, -1].cpu().numpy()
             # forward
-            if isinstance(self.dataset, dataset.image_dataset):
-                p, _ = self.model(imgs, y_action)
-            else:
-                p, _ = self.model(x)
+            with torch.no_grad():
+                if isinstance(self.dataset, dataset.image_dataset):
+                    p, _ = self.model(imgs, y_action)
+                else:
+                    p, _ = self.model(x)
             p = p.view_as(y)
 
             # loss
@@ -361,7 +371,7 @@ class Tester_dynamic_model(Tester):
 
                         self.vis.set_info_text(
                             "trajectory: {}\npolicy model: {}".format(
-                                j, self.cfg.model.backbone
+                                1 + j + idx * self.cfg.data.batch_size, self.cfg.model.backbone
                             )
                         )
                         vis_img = self.vis.draw(redraw=(i == 0))
@@ -369,8 +379,8 @@ class Tester_dynamic_model(Tester):
 
                         if idx == 0 and j == 0 and i == 0:
                             video_out = cv2.VideoWriter(
-                                "{}/{}_policy_batch_{}.mp4".format(
-                                    self.cfg.base_dir, self.cfg.checkpoint_file, j+1
+                                "{}/{}_policy.mp4".format(
+                                    self.cfg.base_dir, self.cfg.checkpoint_file
                                 ),
                                 cv2.VideoWriter_fourcc("m", "p", "4", "v"),
                                 int(1.0 / self.cfg.data.delta_t),
