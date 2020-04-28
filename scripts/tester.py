@@ -205,6 +205,8 @@ class Tester_policy(Tester):
                 np.mean(rollout_losses), np.std(rollout_losses)
             )
         )
+
+
 class Tester_dynamic_model(Tester):
     def __init__(self, configs):
         super(Tester_dynamic_model, self).__init__(configs)
@@ -225,14 +227,14 @@ class Tester_dynamic_model(Tester):
                 delta_state, h = dm(inp)
             else:
                 delta_state, h = dm(inp, h)
-                
-            delta_state = delta_state.detach().cpu().numpy()[0,0,:]
+
+            delta_state = delta_state.detach().cpu().numpy()[0, 0, :]
             state = state + delta_state
         states.append(state)
         time = np.arange(n_step + 1) * dt
         return time, np.array(states)
 
-    def augmented_state(self,state, action):
+    def augmented_state(self, state, action):
         """
         :param state: cartpole state
         :param action: action applied to state
@@ -260,7 +262,7 @@ class Tester_dynamic_model(Tester):
             # rollout
             for j in range(len(s)):
                 # simulate with trained policy
-                state_traj_rollout =  []
+                state_traj_rollout = []
                 for n in range(self.cfg.data.num_traj_samples):
                     # rollout #num_traj_samples trajectories
                     ts, state_traj = self.sim_rollout(
@@ -268,10 +270,10 @@ class Tester_dynamic_model(Tester):
                         self.cfg.data.num_datapoints_per_epoch,
                         self.cfg.data.delta_t,
                         s[j][0].detach().cpu().numpy(),
-                        gt_action[j]
+                        gt_action[j],
                     )
                     state_traj_rollout.append(state_traj)
-            
+
                 state_traj_rollout = np.array(state_traj_rollout)
                 delta_state_traj_rollout = (
                     state_traj_rollout[:, 1:] - state_traj_rollout[:, :-1]
@@ -281,8 +283,20 @@ class Tester_dynamic_model(Tester):
                 delta_delta_state_traj_var = delta_state_traj_rollout.var(0)
 
                 # compute rollout loss w/ swing up policy
+                # this loss is based on normal state. It's usually larger because we didn't optimize the model on it.
+                # state_rollout_loss = (
+                #    ((state_traj_rollout - s[j].cpu().numpy()) ** 2) ** 0.5
+                # ).mean()
+                # this loss is based on delta normal state and it's what the model was optimized for.
                 state_rollout_loss = (
-                    ((state_traj_rollout - s[j].cpu().numpy()) ** 2) ** 0.5
+                    (
+                        (
+                            (state_traj_rollout[:, 1:] - state_traj_rollout[:, :-1])
+                            - (s[j, 1:] - s[j, :-1]).cpu().numpy()
+                        )
+                        ** 2
+                    )
+                    ** 0.5
                 ).mean()
                 rollout_losses.append(state_rollout_loss)
 
