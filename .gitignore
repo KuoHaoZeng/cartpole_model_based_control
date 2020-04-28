@@ -1,4 +1,5 @@
 results/
+video_results/
 data/__pycache__/
 network/__pycache__/
 scripts/__pycache__/

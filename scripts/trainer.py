@@ -18,7 +18,9 @@ class Trainer:
         self.cfg = config
         self.dataset = dataset_protocol[config.data.protocol](config)
         self.dataloader = torch.utils.data.DataLoader(
-            self.dataset, batch_size=config.data.batch_size, num_workers=config.framework.num_thread,
+            self.dataset,
+            batch_size=config.data.batch_size,
+            num_workers=config.framework.num_thread,
         )
         widgets = [
             "Training phase [",
@@ -47,6 +49,7 @@ class Trainer:
             self.model.to(device=0)
 
         self.optimizer = optim.Adam(self.model.parameters(), lr=config.train.lr)
+        # self.optimizer = optim.SGD(self.model.parameters(), lr=config.train.lr)
         self.scheduler = optim.lr_scheduler.MultiStepLR(
             self.optimizer, milestones=config.train.lr_ms, gamma=0.1
         )
@@ -88,7 +91,12 @@ class Trainer_policy(Trainer):
         for epoch in range(1, self.cfg.train.num_epoch + 1):
             for idx, (imgs, s, x, y) in enumerate(self.dataloader):
                 if self.cfg.framework.num_gpu > 0:
-                    imgs, s, x, y = imgs.to(device=0), s.to(device=0), x.to(device=0), y.to(device=0)
+                    imgs, s, x, y = (
+                        imgs.to(device=0),
+                        s.to(device=0),
+                        x.to(device=0),
+                        y.to(device=0),
+                    )
                     if isinstance(self.dataset, dataset.image_dataset):
                         imgs = imgs.to(device=0)
                 y_action = x[:, :, -1]
@@ -108,18 +116,23 @@ class Trainer_policy(Trainer):
                 self.model.zero_grad()
                 l.backward()
                 self.optimizer.step()
-                self.scheduler.step()
 
                 # log
                 self.logger.add_scalar(
                     "{}/loss".format(self.cfg.mode),
                     l.data,
-                    idx + (self.cfg.data.num_datapoints_per_epoch / self.cfg.data.batch_size) * epoch,
+                    idx
+                    + (
+                        self.cfg.data.num_datapoints_per_epoch
+                        / self.cfg.data.batch_size
+                    )
+                    * epoch,
                 )
                 losses.append(l.detach().cpu().numpy())
 
             if epoch % self.cfg.train.save_iter == 0:
                 self.save_checkpoints(losses)
+            self.scheduler.step()
             self.bar.update(epoch)
         print("finish!")
 
@@ -155,17 +168,21 @@ class Trainer_dynamic_model(Trainer):
                 self.model.zero_grad()
                 l.backward()
                 self.optimizer.step()
-                self.scheduler.step()
 
                 # log
                 self.logger.add_scalar(
                     "{}/loss".format(self.cfg.mode),
                     l.data,
-                    idx + (self.cfg.data.num_datapoints_per_epoch/self.cfg.data.batch_size) * epoch,
+                    idx
+                    + (
+                        self.cfg.data.num_datapoints_per_epoch
+                        / self.cfg.data.batch_size
+                    )
+                    * epoch,
                 )
                 losses.append(l.detach().cpu().numpy())
-
             if epoch % self.cfg.train.save_iter == 0:
                 self.save_checkpoints(losses)
+            self.scheduler.step()
             self.bar.update(epoch)
         print("finish!")

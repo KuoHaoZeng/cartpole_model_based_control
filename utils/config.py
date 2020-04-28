@@ -128,19 +128,17 @@ class Config(AttrDict):
 
                         if "." in target_key:
                             target_sub_keys = target_key.split(".")
-                            value = self.get_recursive_value(self.org_dict, target_sub_keys)
+                            value = self.get_recursive_value(
+                                self.org_dict, target_sub_keys
+                            )
                             if isinstance(value, str):
-                                v = "{}{}{}".format(
-                                    pre_remain, value, pos_remain
-                                )
+                                v = "{}{}{}".format(pre_remain, value, pos_remain)
                             else:
                                 v = value
                         elif target_key in self.all_keys:
                             value = self.org_dict[target_key]
                             if isinstance(value, str):
-                                v = "{}{}{}".format(
-                                    pre_remain, value, pos_remain
-                                )
+                                v = "{}{}{}".format(pre_remain, value, pos_remain)
                             else:
                                 v = value
                         else:

@@ -12,8 +12,8 @@ def get_configs():
 
 
 def main(cfg):
-    worker = trainer_protocol[cfg.exp_prefix](cfg)
-    worker.run()
+    # worker = trainer_protocol[cfg.exp_prefix](cfg)
+    # worker.run()
     worker = tester_protocol[cfg.exp_prefix](cfg)
     worker.run()
 

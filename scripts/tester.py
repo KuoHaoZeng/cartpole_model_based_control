@@ -20,7 +20,9 @@ class Tester:
         self.cfg = config
         self.dataset = dataset_protocol[config.data.protocol](config)
         self.dataloader = torch.utils.data.DataLoader(
-            self.dataset, batch_size=config.data.batch_size, num_workers=config.framework.num_thread,
+            self.dataset,
+            batch_size=config.data.batch_size,
+            num_workers=config.framework.num_thread,
         )
         widgets = [
             "Testing phase [",
@@ -92,7 +94,7 @@ class Tester_policy(Tester):
                     if i == 0:
                         action, h = policy(inp)
                     else:
-                        action, h = policy(inp, h)
+                        action, h = policy(inp, None, h)
                 else:
                     inp = self.augmented_state(state)
                     inp = torch.Tensor(inp).unsqueeze(0).unsqueeze(0)
@@ -155,7 +157,7 @@ class Tester_policy(Tester):
                         self.cfg.data.num_datapoints_per_epoch,
                         self.cfg.data.delta_t,
                         s[j][0].detach().cpu().numpy(),
-                        imgs,
+                        imgs[j],
                     )
                     state_traj_rollout.append(state_traj)
                     action_traj_rollout.append(action_traj)
@@ -202,7 +204,8 @@ class Tester_policy(Tester):
 
                         self.vis.set_info_text(
                             "trajectory: {}\npolicy model: {}".format(
-                                1 + j + idx * self.cfg.data.batch_size, self.cfg.model.backbone
+                                1 + j + idx * self.cfg.data.batch_size,
+                                self.cfg.model.backbone,
                             )
                         )
                         vis_img = self.vis.draw(redraw=(i == 0))
@@ -210,8 +213,10 @@ class Tester_policy(Tester):
 
                         if idx == 0 and j == 0 and i == 0:
                             video_out = cv2.VideoWriter(
-                                "{}/{}_policy.mp4".format(
-                                    self.cfg.base_dir, self.cfg.checkpoint_file
+                                "{}/{}_{}.mp4".format(
+                                    self.cfg.base_dir,
+                                    self.cfg.checkpoint_file,
+                                    self.cfg.test.video_name,
                                 ),
                                 cv2.VideoWriter_fourcc("m", "p", "4", "v"),
                                 int(1.0 / self.cfg.data.delta_t),
@@ -222,9 +227,9 @@ class Tester_policy(Tester):
 
                 self.bar.update(j + 1)
         print("finish!")
-        print("L2 loss: {:.2f}±{:.2f}".format(np.mean(losses), np.std(losses)))
+        print("L2 loss: {:.3f}±{:.3f}".format(np.mean(losses), np.std(losses)))
         print(
-            "rollout L2 loss: {:.2f}±{:.2f}".format(
+            "rollout L2 loss: {:.3f}±{:.3f}".format(
                 np.mean(rollout_losses), np.std(rollout_losses)
             )
         )
@@ -371,7 +376,8 @@ class Tester_dynamic_model(Tester):
 
                         self.vis.set_info_text(
                             "trajectory: {}\npolicy model: {}".format(
-                                1 + j + idx * self.cfg.data.batch_size, self.cfg.model.backbone
+                                1 + j + idx * self.cfg.data.batch_size,
+                                self.cfg.model.backbone,
                             )
                         )
                         vis_img = self.vis.draw(redraw=(i == 0))
@@ -379,8 +385,10 @@ class Tester_dynamic_model(Tester):
 
                         if idx == 0 and j == 0 and i == 0:
                             video_out = cv2.VideoWriter(
-                                "{}/{}_policy.mp4".format(
-                                    self.cfg.base_dir, self.cfg.checkpoint_file
+                                "{}/{}_{}.mp4".format(
+                                    self.cfg.base_dir,
+                                    self.cfg.checkpoint_file,
+                                    self.cfg.test.video_name,
                                 ),
                                 cv2.VideoWriter_fourcc("m", "p", "4", "v"),
                                 int(1.0 / self.cfg.data.delta_t),
@@ -391,9 +399,9 @@ class Tester_dynamic_model(Tester):
 
                 self.bar.update(j + 1)
         print("finish!")
-        print("L2 loss: {:.2f}±{:.2f}".format(np.mean(losses), np.std(losses)))
+        print("L2 loss: {:.3f}±{:.3f}".format(np.mean(losses), np.std(losses)))
         print(
-            "rollout L2 loss: {:.2f}±{:.2f}".format(
+            "rollout L2 loss: {:.3f}±{:.3f}".format(
                 np.mean(rollout_losses), np.std(rollout_losses)
             )
         )

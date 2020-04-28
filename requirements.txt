@@ -2,10 +2,5 @@ scipy==1.4.1
 numpy==1.16.2
 matplotlib==3.0.3
 ruamel.yaml==0.16.10
-opencv-python
-matplotlib
-scikit-image
-tensorflow
-progressbar
 torch
 torchvision

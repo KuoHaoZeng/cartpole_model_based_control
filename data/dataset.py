@@ -80,13 +80,18 @@ class image_dataset(state_dataset):
         s, x, y = self.generate_data()
         name = np.array([""] * self.horizon)
         alpha = np.array([self.alpha] * 100)
-        imgs_tmp = self.vis.draw_cartpole_batch_for_dataset(name, s[:, 3], s[:, 2], alpha)
+        imgs_tmp = self.vis.draw_cartpole_batch_for_dataset(
+            name, s[:, 3], s[:, 2], alpha
+        )
 
         imgs = []
         for h in range(self.horizon):
-            img = transform.resize(imgs_tmp[h], (self.cfg.data.input_cnn_dim[1], self.cfg.data.input_cnn_dim[2]))
+            img = transform.resize(
+                imgs_tmp[h],
+                (self.cfg.data.input_cnn_dim[1], self.cfg.data.input_cnn_dim[2]),
+            )
             imgs.append(img)
-        #for h in range(self.horizon):
+        # for h in range(self.horizon):
         #    img = self.vis.draw_cartpole("", s[h, 3], s[h, 2], self.alpha)
         #    img = transform.resize(img, (self.cfg.data.input_cnn_dim[1], self.cfg.data.input_cnn_dim[2]))
         #    imgs.append(img)

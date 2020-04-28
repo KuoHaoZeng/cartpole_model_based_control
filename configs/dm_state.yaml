@@ -16,7 +16,7 @@ framework:
 
 model:
     protocol: state # {state, image}
-    backbone: dlstm # {fc, gru, lstm, dfc, dgru, dlstm}
+    backbone: fc # {fc, gru, lstm, dfc, dgru, dlstm}
     hidden_dim: 64
     num_layers: 1 # only work for gry and lstm right now
     dropout_p: 0.05 # only work for the model has dropout layer
@@ -52,3 +52,4 @@ test:
     gt_title: Swing-up sim rollout
     model_title: NN Prediction
     film: True
+    video_name: "{{model.protocol}}_{{model.backbone}}"

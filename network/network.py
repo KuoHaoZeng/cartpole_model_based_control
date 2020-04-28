@@ -64,7 +64,9 @@ class basic_GRU(basic_model):
 
         self.linear_in = nn.Linear(self.input_dim, self.hidden_dim)
         self.linear_out = nn.Linear(self.hidden_dim, self.output_dim)
-        self.gru = nn.GRU(self.hidden_dim, self.hidden_dim, self.num_layers, batch_first=True)
+        self.gru = nn.GRU(
+            self.hidden_dim, self.hidden_dim, self.num_layers, batch_first=True
+        )
 
     def forward(self, x, h0):
         x = self.activation(self.linear_in(x))
@@ -83,7 +85,9 @@ class dropout_GRU(basic_model):
 
         self.linear_in = nn.Linear(self.input_dim, self.hidden_dim)
         self.linear_out = nn.Linear(self.hidden_dim, self.output_dim)
-        self.gru = nn.GRU(self.hidden_dim, self.hidden_dim, self.num_layers, batch_first=True)
+        self.gru = nn.GRU(
+            self.hidden_dim, self.hidden_dim, self.num_layers, batch_first=True
+        )
         self.dropout = nn.Dropout(self.p)
 
     def forward(self, x, h0):
@@ -104,7 +108,9 @@ class basic_LSTM(basic_model):
 
         self.linear_in = nn.Linear(self.input_dim, self.hidden_dim)
         self.linear_out = nn.Linear(self.hidden_dim, self.output_dim)
-        self.lstm = nn.LSTM(self.hidden_dim, self.hidden_dim, self.num_layers, batch_first=True)
+        self.lstm = nn.LSTM(
+            self.hidden_dim, self.hidden_dim, self.num_layers, batch_first=True
+        )
 
     def forward(self, x, m):
         x = self.activation(self.linear_in(x))
@@ -129,7 +135,9 @@ class dropout_LSTM(basic_model):
 
         self.linear_in = nn.Linear(self.input_dim, self.hidden_dim)
         self.linear_out = nn.Linear(self.hidden_dim, self.output_dim)
-        self.lstm = nn.LSTM(self.hidden_dim, self.hidden_dim, self.num_layers, batch_first=True)
+        self.lstm = nn.LSTM(
+            self.hidden_dim, self.hidden_dim, self.num_layers, batch_first=True
+        )
         self.dropout = nn.Dropout(self.p)
 
     def forward(self, x, m):
@@ -170,13 +178,15 @@ class basic_CNN(basic_model):
         # resort the input dimension
         batch_size_tmp = x.shape[0]
         horizon_tmp = x.shape[1]
-        x = x.view(-1, self.input_cnn_dim[0], self.input_cnn_dim[1], self.input_cnn_dim[2])
+        x = x.view(
+            -1, self.input_cnn_dim[0], self.input_cnn_dim[1], self.input_cnn_dim[2]
+        )
+        # x = x.transpose(2, 3).transpose(2, 3).view(-1, self.input_cnn_dim[0], self.input_cnn_dim[1], self.input_cnn_dim[2])
 
         # do forward through CNN
         x = self.backbone(x)
         x = x.view(batch_size_tmp, horizon_tmp, -1)
         return x
-
 
 
 class model_image(nn.Module):
@@ -209,9 +219,7 @@ class model_state(nn.Module):
         self.output_dim = cfg.data.output_dim
         self.hidden_dim = cfg.model.hidden_dim
 
-        self.backbone = backbone[cfg.model.backbone](
-            self.cfg
-        )
+        self.backbone = backbone[cfg.model.backbone](self.cfg)
 
     def forward(self, x, m=None):
         return self.backbone(x, m)
