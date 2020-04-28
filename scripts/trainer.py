@@ -7,7 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 from network import network
 from data import dataset
 
-model_protocol = {"state": network.model_state, "image": network.model_CNN}
+model_protocol = {"state": network.model_state, "image": network.model_image}
 dataset_protocol = {"state": dataset.state_dataset, "image": dataset.image_dataset}
 
 
@@ -18,7 +18,7 @@ class Trainer:
         self.cfg = config
         self.dataset = dataset_protocol[config.data.protocol](config)
         self.dataloader = torch.utils.data.DataLoader(
-            self.dataset, batch_size=config.data.batch_size, num_workers=4,
+            self.dataset, batch_size=config.data.batch_size, num_workers=config.framework.num_thread,
         )
         widgets = [
             "Training phase [",
@@ -88,12 +88,17 @@ class Trainer_policy(Trainer):
         for epoch in range(1, self.cfg.train.num_epoch + 1):
             for idx, (imgs, s, x, y) in enumerate(self.dataloader):
                 if self.cfg.framework.num_gpu > 0:
-                    s, x, y = s.to(device=0), x.to(device=0), y.to(device=0)
+                    imgs, s, x, y = imgs.to(device=0), s.to(device=0), x.to(device=0), y.to(device=0)
+                    if isinstance(self.dataset, dataset.image_dataset):
+                        imgs = imgs.to(device=0)
                 y_action = x[:, :, -1]
                 x = x[:, :, :-1]
 
                 # forward
-                p, _ = self.model(x)
+                if isinstance(self.dataset, dataset.image_dataset):
+                    p, _ = self.model(imgs)
+                else:
+                    p, _ = self.model(x)
                 p = p.view_as(y_action)
 
                 # loss
@@ -109,7 +114,7 @@ class Trainer_policy(Trainer):
                 self.logger.add_scalar(
                     "{}/loss".format(self.cfg.mode),
                     l.data,
-                    idx + self.cfg.train.num_epoch * epoch,
+                    idx + (self.cfg.data.num_datapoints_per_epoch / self.data.batch_size) * epoch,
                 )
                 losses.append(l.detach().cpu().numpy())
 
@@ -132,9 +137,15 @@ class Trainer_dynamic_model(Trainer):
             for idx, (imgs, s, x, y) in enumerate(self.dataloader):
                 if self.cfg.framework.num_gpu > 0:
                     s, x, y = s.to(device=0), x.to(device=0), y.to(device=0)
+                    if isinstance(self.dataset, dataset.image_dataset):
+                        imgs = imgs.to(device=0)
+                y_action = x[:, :, -1]
 
                 # forward
-                p, _ = self.model(x)
+                if isinstance(self.dataset, dataset.image_dataset):
+                    p, _ = self.model(imgs, y_action)
+                else:
+                    p, _ = self.model(x)
                 p = p.view_as(y)
 
                 # loss
@@ -150,7 +161,7 @@ class Trainer_dynamic_model(Trainer):
                 self.logger.add_scalar(
                     "{}/loss".format(self.cfg.mode),
                     l.data,
-                    idx + self.cfg.train.num_epoch * epoch,
+                    idx + (self.cfg.data.num_datapoints_per_epoch/self.data.batch_size) * epoch,
                 )
                 losses.append(l.detach().cpu().numpy())
 

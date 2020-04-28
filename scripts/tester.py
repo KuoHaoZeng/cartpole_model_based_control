@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 plt.style.use("ggplot")
 
-model_protocol = {"state": network.model_state, "image": network.model_CNN}
+model_protocol = {"state": network.model_state, "image": network.model_image}
 dataset_protocol = {"state": dataset.state_dataset, "image": dataset.image_dataset}
 
 
@@ -20,7 +20,7 @@ class Tester:
         self.cfg = config
         self.dataset = dataset_protocol[config.data.protocol](config)
         self.dataloader = torch.utils.data.DataLoader(
-            self.dataset, batch_size=config.data.batch_size, num_workers=4,
+            self.dataset, batch_size=config.data.batch_size, num_workers=config.framework.num_thread,
         )
         widgets = [
             "Testing phase [",
@@ -74,20 +74,27 @@ class Tester_policy(Tester):
         ### define loss functions
         self.criterion = nn.MSELoss()
 
-    def sim_rollout(self, sim, policy, n_step, dt, init_state):
+    def sim_rollout(self, sim, policy, n_step, dt, init_state, imgs):
         states = []
         state = init_state
         actions = []
         for i in range(n_step):
             states.append(state)
-            inp = self.augmented_state(state)
-            inp = torch.Tensor(inp).unsqueeze(0).unsqueeze(0)
-            if self.cfg.framework.num_gpu > 0:
-                inp = inp.to(device=0)
-            if i == 0:
-                action, m = policy(inp)
+            if isinstance(self.dataset, dataset.image_dataset):
+                inp = imgs[i].unsqueeze(0).unsqueeze(0)
+                if i == 0:
+                    action, h = policy(inp)
+                else:
+                    action, h = policy(inp, h)
             else:
-                action, m = policy(inp, m)
+                inp = self.augmented_state(state)
+                inp = torch.Tensor(inp).unsqueeze(0).unsqueeze(0)
+                if self.cfg.framework.num_gpu > 0:
+                    inp = inp.to(device=0)
+                if i == 0:
+                    action, m = policy(inp)
+                else:
+                    action, m = policy(inp, m)
             action = action.detach().cpu().numpy()
             actions.append(action)
             state = sim.step(state, [action], noisy=True)
@@ -109,12 +116,17 @@ class Tester_policy(Tester):
         for idx, (imgs, s, x, y) in enumerate(self.dataloader):
             if self.cfg.framework.num_gpu > 0:
                 s, x, y = s.to(device=0), x.to(device=0), y.to(device=0)
+                if isinstance(self.dataset, dataset.image_dataset):
+                    imgs = imgs.to(device=0)
             y_action = x[:, :, -1]
             gt_action = x[:, :, -1].cpu().numpy()
             x = x[:, :, :-1]
 
             # forward
-            p, _ = self.model(x)
+            if isinstance(self.dataset, dataset.image_dataset):
+                p, _ = self.model(imgs)
+            else:
+                p, _ = self.model(x)
             p = p.view_as(y_action)
 
             # loss
@@ -123,6 +135,7 @@ class Tester_policy(Tester):
             losses.append(l.detach().cpu().numpy())
 
             # rollout
+            self.bar.update(0)
             for j in range(len(s)):
                 # simulate with trained policy
                 state_traj_rollout, action_traj_rollout = [], []
@@ -134,6 +147,7 @@ class Tester_policy(Tester):
                         self.cfg.data.num_datapoints_per_epoch,
                         self.cfg.data.delta_t,
                         s[j][0].detach().cpu().numpy(),
+                        imgs,
                     )
                     state_traj_rollout.append(state_traj)
                     action_traj_rollout.append(action_traj)
@@ -188,8 +202,8 @@ class Tester_policy(Tester):
 
                         if idx == 0 and j == 0 and i == 0:
                             video_out = cv2.VideoWriter(
-                                "{}/{}_policy.mp4".format(
-                                    self.cfg.base_dir, self.cfg.checkpoint_file
+                                "{}/{}_policy_batch_{}.mp4".format(
+                                    self.cfg.base_dir, self.cfg.checkpoint_file, j+1
                                 ),
                                 cv2.VideoWriter_fourcc("m", "p", "4", "v"),
                                 int(1.0 / self.cfg.data.delta_t),
@@ -215,19 +229,29 @@ class Tester_dynamic_model(Tester):
         ### define loss functions
         self.criterion = nn.MSELoss()
 
-    def sim_rollout(self, dm, n_step, dt, init_state, actions):
+    def sim_rollout(self, dm, n_step, dt, init_state, actions, imgs):
         states = []
         state = init_state
         for i in range(n_step):
             states.append(state)
-            inp = self.augmented_state(state, actions[i])
-            inp = torch.Tensor(inp).unsqueeze(0).unsqueeze(0)
-            if self.cfg.framework.num_gpu > 0:
-                inp = inp.to(device=0)
-            if i == 0:
-                delta_state, h = dm(inp)
+            if isinstance(self.dataset, dataset.image_dataset):
+                inp = imgs[i].unsqueeze(0).unsqueeze(0)
+                x = torch.Tensor([actions[i]]).unsqueeze(0)
+                if self.cfg.framework.num_gpu > 0:
+                    x = x.to(device=0)
+                if i == 0:
+                    delta_state, h = dm(inp, x)
+                else:
+                    delta_state, h = dm(inp, x, h)
             else:
-                delta_state, h = dm(inp, h)
+                inp = self.augmented_state(state, actions[i])
+                inp = torch.Tensor(inp).unsqueeze(0).unsqueeze(0)
+                if self.cfg.framework.num_gpu > 0:
+                    inp = inp.to(device=0)
+                if i == 0:
+                    delta_state, h = dm(inp)
+                else:
+                    delta_state, h = dm(inp, h)
 
             delta_state = delta_state.detach().cpu().numpy()[0, 0, :]
             state = state + delta_state
@@ -249,10 +273,16 @@ class Tester_dynamic_model(Tester):
         for idx, (imgs, s, x, y) in enumerate(self.dataloader):
             if self.cfg.framework.num_gpu > 0:
                 s, x, y = s.to(device=0), x.to(device=0), y.to(device=0)
+                if isinstance(self.dataset, dataset.image_dataset):
+                    imgs = imgs.to(device=0)
+            y_action = x[:, :, -1]
 
             gt_action = x[:, :, -1].cpu().numpy()
             # forward
-            p, _ = self.model(x)
+            if isinstance(self.dataset, dataset.image_dataset):
+                p, _ = self.model(imgs, y_action)
+            else:
+                p, _ = self.model(x)
             p = p.view_as(y)
 
             # loss
@@ -261,6 +291,7 @@ class Tester_dynamic_model(Tester):
             losses.append(l.detach().cpu().numpy())
 
             # rollout
+            self.bar.update(0)
             for j in range(len(s)):
                 # simulate with trained policy
                 state_traj_rollout = []
@@ -272,6 +303,7 @@ class Tester_dynamic_model(Tester):
                         self.cfg.data.delta_t,
                         s[j][0].detach().cpu().numpy(),
                         gt_action[j],
+                        imgs[j],
                     )
                     state_traj_rollout.append(state_traj)
 
@@ -337,8 +369,8 @@ class Tester_dynamic_model(Tester):
 
                         if idx == 0 and j == 0 and i == 0:
                             video_out = cv2.VideoWriter(
-                                "{}/{}_policy.mp4".format(
-                                    self.cfg.base_dir, self.cfg.checkpoint_file
+                                "{}/{}_policy_batch_{}.mp4".format(
+                                    self.cfg.base_dir, self.cfg.checkpoint_file, j+1
                                 ),
                                 cv2.VideoWriter_fourcc("m", "p", "4", "v"),
                                 int(1.0 / self.cfg.data.delta_t),

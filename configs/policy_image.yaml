@@ -1,0 +1,56 @@
+
+mode: "train"
+
+exp_prefix: "policy"
+
+base_dir: "results/{{exp_prefix}}_{{model.protocol}}/{{model.backbone}}"
+log_dir: "log.jsonl"
+
+checkpoint_dir: "{{base_dir}}/checkpoints"
+checkpoint_file: best_model
+
+framework:
+    seed: 12345
+    num_thread: 12
+    num_gpu: 1
+
+model:
+    protocol: image # {state, image}
+    backbone: dlstm # {fc, gru, lstm, dfc, dgru, dlstm}
+    backbone_cnn: basic # {basic}
+    hidden_dim: 64
+    num_layers: 1 # only work for gru and lstm right now
+    dropout_p: 0.05 # only work for the model has dropout layer
+    activation_func: tanh # {tanh, sigm, relu}
+
+data:
+    protocol: "{{model.protocol}}"
+    delta_t: 0.05
+    horizon: 50
+    input_dim: "{{model.hidden_dim}}"
+    input_cnn_dim: [3, 256, 256]
+    output_dim: 1
+    batch_size: 50
+    num_datapoints_per_epoch: 50
+    num_traj_samples: 10
+    expert_policy: swing_up # {random, swing_up}
+    policy_dir: 'data/policy.npz'
+    default_init_state: [0.01, 0.01, 0.5, 0.1] # note that we are going to do init_state[2] * np.pi in the script
+    image:
+        cart_width: 1.0
+        cart_height: 0.5
+        pole_length: 1.0
+        pole_thickness: 3.0
+        figsize: [4, 3]
+        alpha: 0.5
+
+train:
+    num_epoch: 100
+    lr: 0.01
+    lr_ms: [70, 90]
+    save_iter: 10
+
+test:
+    gt_title: swing_up
+    model_title: behavior_cloning
+    film: True

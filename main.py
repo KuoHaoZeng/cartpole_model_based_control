@@ -5,7 +5,7 @@ from scripts import trainer, tester
 
 def get_configs():
     parser = argparse.ArgumentParser(description="We are the best!!!")
-    parser.add_argument("--config", type=str, default="configs/dm_train.yaml")
+    parser.add_argument("--config", type=str, default="configs/dm_state.yaml")
     args = parser.parse_args()
     config = Config(args.config)
     return config

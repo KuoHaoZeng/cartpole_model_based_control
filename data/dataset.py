@@ -5,6 +5,7 @@ from data.cartpole_sim import CartpoleSim
 from data.policy import SwingUpAndBalancePolicy, RandomPolicy
 from data.cartpole_test import sim_rollout, make_training_data
 from data.visualization import CartpoleVisualizer
+from skimage import transform
 
 protocol = {"random": RandomPolicy, "swing_up": SwingUpAndBalancePolicy}
 
@@ -77,8 +78,16 @@ class image_dataset(state_dataset):
 
     def __getitem__(self, index):
         s, x, y = self.generate_data()
+        name = np.array([""] * self.horizon)
+        alpha = np.array([self.alpha] * 100)
+        imgs_tmp = self.vis.draw_cartpole_batch(name, s[:, 3], s[:, 2], alpha)
         imgs = []
         for h in range(self.horizon):
-            img = self.vis.draw_cartpole("", s[h, 3], s[h, 2], self.alpha)
+            img = transform.resize(imgs_tmp[h], (self.cfg.data.input_cnn_dim[1], self.cfg.data.input_cnn_dim[2]))
             imgs.append(img)
+        #for h in range(self.horizon):
+        #    img = self.vis.draw_cartpole("", s[h, 3], s[h, 2], self.alpha)
+        #    img = transform.resize(img, (self.cfg.data.input_cnn_dim[1], self.cfg.data.input_cnn_dim[2]))
+        #    imgs.append(img)
+
         return torch.Tensor(imgs), torch.Tensor(s), torch.Tensor(x), torch.Tensor(y)

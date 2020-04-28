@@ -1,9 +1,9 @@
 
 mode: "train"
 
-exp_prefix: "policy"
+exp_prefix: "dm"
 
-base_dir: "results/{{exp_prefix}}/{{model.backbone}}"
+base_dir: "results/{{exp_prefix}}_{{model.protocol}}/{{model.backbone}}"
 log_dir: "log.jsonl"
 
 checkpoint_dir: "{{base_dir}}/checkpoints"
@@ -11,24 +11,26 @@ checkpoint_file: best_model
 
 framework:
     seed: 12345
-    num_thread: 1
+    num_thread: 12
     num_gpu: 1
 
 model:
-    protocol: state # {state, image}
+    protocol: image # {state, image}
     backbone: dlstm # {fc, gru, lstm, dfc, dgru, dlstm}
+    backbone_cnn: basic # {basic}
     hidden_dim: 64
-    num_layers: 1 # only work for gru and lstm right now
+    num_layers: 1 # only work for gry and lstm right now
     dropout_p: 0.05 # only work for the model has dropout layer
     activation_func: tanh # {tanh, sigm, relu}
 
 data:
-    protocol: state
+    protocol: "{{model.protocol}}"
     delta_t: 0.05
     horizon: 50
-    input_dim: 5
-    output_dim: 1
-    batch_size: 50
+    input_dim: 65
+    input_cnn_dim: [3, 256, 256]
+    output_dim: 4
+    batch_size: 10
     num_datapoints_per_epoch: 50
     num_traj_samples: 10
     expert_policy: swing_up # {random, swing_up}
@@ -49,6 +51,6 @@ train:
     save_iter: 10
 
 test:
-    gt_title: swing_up
-    model_title: behavior_cloning
+    gt_title: Swing-up sim rollout
+    model_title: NN Prediction
     film: True

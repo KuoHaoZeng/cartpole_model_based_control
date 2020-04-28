@@ -11,7 +11,7 @@ checkpoint_file: best_model
 
 framework:
     seed: 12345
-    num_thread: 1
+    num_thread: 4
     num_gpu: 1
 
 model:

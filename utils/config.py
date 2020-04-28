@@ -106,6 +106,12 @@ class Config(AttrDict):
         cfg_dict = self.replace_variable(cfg_dict)
         super(Config, self).__init__(cfg_dict)
 
+    def get_recursive_value(self, d, keys):
+        if len(keys) > 1:
+            return self.get_recursive_value(d[keys[0]], keys[1:])
+        else:
+            return d[keys[0]]
+
     def replace_variable(self, cfg_dict):
         output_dict = {}
         for k, v in cfg_dict.items():
@@ -117,12 +123,26 @@ class Config(AttrDict):
                     num = v.count("{{")
                     for _ in range(num):
                         target_key = v.split("{{")[1].split("}}")[0]
-                        if target_key in self.all_keys:
-                            pos_remain = "}}".join(v.split("}}")[1:])
-                            pre_remain = v.split("{{")[0]
-                            v = "{}{}{}".format(
-                                pre_remain, self.org_dict[target_key], pos_remain
-                            )
+                        pos_remain = "}}".join(v.split("}}")[1:])
+                        pre_remain = v.split("{{")[0]
+
+                        if "." in target_key:
+                            target_sub_keys = target_key.split(".")
+                            value = self.get_recursive_value(self.org_dict, target_sub_keys)
+                            if isinstance(value, str):
+                                v = "{}{}{}".format(
+                                    pre_remain, value, pos_remain
+                                )
+                            else:
+                                v = value
+                        elif target_key in self.all_keys:
+                            value = self.org_dict[target_key]
+                            if isinstance(value, str):
+                                v = "{}{}{}".format(
+                                    pre_remain, value, pos_remain
+                                )
+                            else:
+                                v = value
                         else:
                             raise KeyError
             output_dict[k] = v
