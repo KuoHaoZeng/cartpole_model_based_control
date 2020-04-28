@@ -3,7 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="8fdcc982-a177-4b2a-a52a-925cb85312c5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/dm_train.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/dm_train.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/policy_train.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/policy_train.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/network.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/tester.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/tester.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -113,7 +116,7 @@
       <workItem from="1587711722608" duration="7352000" />
       <workItem from="1587806877486" duration="9564000" />
       <workItem from="1587889423844" duration="14889000" />
-      <workItem from="1588031007596" duration="1772000" />
+      <workItem from="1588031007596" duration="4611000" />
     </task>
     <servers />
   </component>

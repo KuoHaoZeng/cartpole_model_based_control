@@ -3,7 +3,7 @@ mode: "train"
 
 exp_prefix: "policy"
 
-base_dir: "results/{{exp_prefix}}"
+base_dir: "results/{{exp_prefix}}/{{model.backbone}}"
 log_dir: "log.jsonl"
 
 checkpoint_dir: "{{base_dir}}/checkpoints"
@@ -16,8 +16,11 @@ framework:
 
 model:
     protocol: state # {state, image}
-    backbone: lstm # {fc, gru, lstm}
+    backbone: dlstm # {fc, gru, lstm, dfc, dgru, dlstm}
     hidden_dim: 64
+    num_layers: 1 # only work for gru and lstm right now
+    dropout_p: 0.05 # only work for the model has dropout layer
+    activation_func: tanh # {tanh, sigm, relu}
 
 data:
     protocol: state

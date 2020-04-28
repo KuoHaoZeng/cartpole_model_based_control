@@ -44,7 +44,8 @@ class Tester:
         self.load_checkpoints()
         if config.framework.num_gpu > 0:
             self.model.to(device=0)
-        self.model.eval()
+        if config.model.backbone[0] != "d":
+            self.model.eval()
 
         ### visualization
         self.vis = Visualizer(

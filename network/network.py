@@ -4,34 +4,61 @@ from network.mobilenet import mobilenet_v2
 from network.resnet import resnet18
 
 
-class basic_MLP(nn.Module):
-    def __init__(self, input_dim, output_dim, hidden_dim, activation_func=nn.Tanh):
-        super(basic_MLP, self).__init__()
+class basic_model(nn.Module):
+    def __init__(self, config):
+        super(basic_model, self).__init__()
+
+        self.hidden_dim = config.model.hidden_dim
+        self.input_dim = config.data.input_dim
+        self.output_dim = config.data.output_dim
+        self.p = config.model.dropout_p
+        self.activation_func = activation[config.model.activation_func]
+        self.num_layers = config.model.num_layers
+
+    def forward(self):
+        raise NotImplementedError
+
+
+class basic_MLP(basic_model):
+    def __init__(self, config):
+        super(basic_MLP, self).__init__(config)
 
         self.backbone = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            activation_func(),
-            nn.Linear(hidden_dim, hidden_dim),
-            activation_func(),
-            nn.Linear(hidden_dim, output_dim),
+            nn.Linear(self.input_dim, self.hidden_dim),
+            self.activation_func(),
+            nn.Linear(self.hidden_dim, self.hidden_dim),
+            self.activation_func(),
+            nn.Linear(self.hidden_dim, self.output_dim),
         )
 
     def forward(self, x, m):
         return self.backbone(x), m
 
 
-class basic_GRU(nn.Module):
-    def __init__(
-        self, input_dim, output_dim, hidden_dim, activation_func=nn.Tanh, num_layers=1
-    ):
-        super(basic_GRU, self).__init__()
+class dropout_MLP(basic_model):
+    def __init__(self, config):
+        super(dropout_MLP, self).__init__(config)
 
-        self.num_layers = num_layers
-        self.hidden_dim = hidden_dim
-        self.linear_in = nn.Linear(input_dim, hidden_dim)
-        self.linear_out = nn.Linear(hidden_dim, output_dim)
-        self.gru = nn.GRU(hidden_dim, hidden_dim, num_layers, batch_first=True)
-        self.activation = activation_func()
+        self.backbone = nn.Sequential(
+            nn.Linear(self.input_dim, self.hidden_dim),
+            self.activation_func(),
+            nn.Linear(self.hidden_dim, self.hidden_dim),
+            self.activation_func(),
+            nn.Dropout(self.p),
+            nn.Linear(self.hidden_dim, self.output_dim),
+        )
+
+    def forward(self, x, m):
+        return self.backbone(x), m
+
+
+class basic_GRU(basic_model):
+    def __init__(self, config):
+        super(basic_GRU, self).__init__(config)
+
+        self.linear_in = nn.Linear(self.input_dim, self.hidden_dim)
+        self.linear_out = nn.Linear(self.hidden_dim, self.output_dim)
+        self.gru = nn.GRU(self.hidden_dim, self.hidden_dim, self.num_layers, batch_first=True)
 
     def forward(self, x, h0):
         x = self.activation(self.linear_in(x))
@@ -44,18 +71,34 @@ class basic_GRU(nn.Module):
         return x, hn
 
 
-class basic_LSTM(nn.Module):
-    def __init__(
-        self, input_dim, output_dim, hidden_dim, activation_func=nn.Tanh, num_layers=1
-    ):
-        super(basic_LSTM, self).__init__()
+class dropout_GRU(basic_model):
+    def __init__(self, config):
+        super(dropout_GRU, self).__init__(config)
 
-        self.num_layers = num_layers
-        self.hidden_dim = hidden_dim
-        self.linear_in = nn.Linear(input_dim, hidden_dim)
-        self.linear_out = nn.Linear(hidden_dim, output_dim)
-        self.lstm = nn.LSTM(hidden_dim, hidden_dim, num_layers, batch_first=True)
-        self.activation = activation_func()
+        self.linear_in = nn.Linear(self.input_dim, self.hidden_dim)
+        self.linear_out = nn.Linear(self.hidden_dim, self.output_dim)
+        self.gru = nn.GRU(self.hidden_dim, self.hidden_dim, self.num_layers, batch_first=True)
+        self.dropout = nn.Dropout(self.p)
+
+    def forward(self, x, h0):
+        x = self.activation(self.linear_in(x))
+        if type(h0) == type(None):
+            h0 = torch.zeros((self.num_layers, x.shape[0], self.hidden_dim)).to(
+                x.device
+            )
+        x, hn = self.gru(x, h0)
+        x = self.dropout(self.activation(x))
+        x = self.linear_out(x)
+        return x, hn
+
+
+class basic_LSTM(basic_model):
+    def __init__(self, config):
+        super(basic_LSTM, self).__init__(config)
+
+        self.linear_in = nn.Linear(self.input_dim, self.hidden_dim)
+        self.linear_out = nn.Linear(self.hidden_dim, self.output_dim)
+        self.lstm = nn.LSTM(self.hidden_dim, self.hidden_dim, self.num_layers, batch_first=True)
 
     def forward(self, x, m):
         x = self.activation(self.linear_in(x))
@@ -71,6 +114,33 @@ class basic_LSTM(nn.Module):
             )
         x, (hn, cn) = self.lstm(x, (h0, c0))
         x = self.linear_out(self.activation(x))
+        return x, (hn, cn)
+
+
+class dropout_LSTM(basic_model):
+    def __init__(self, config):
+        super(dropout_LSTM, self).__init__(config)
+
+        self.linear_in = nn.Linear(self.input_dim, self.hidden_dim)
+        self.linear_out = nn.Linear(self.hidden_dim, self.output_dim)
+        self.lstm = nn.LSTM(self.hidden_dim, self.hidden_dim, self.num_layers, batch_first=True)
+        self.dropout = nn.Dropout(self.p)
+
+    def forward(self, x, m):
+        x = self.activation(self.linear_in(x))
+        if isinstance(m, tuple):
+            h0 = m[0]
+            c0 = m[1]
+        else:
+            h0 = torch.zeros((self.num_layers, x.shape[0], self.hidden_dim)).to(
+                x.device
+            )
+            c0 = torch.zeros((self.num_layers, x.shape[0], self.hidden_dim)).to(
+                x.device
+            )
+        x, (hn, cn) = self.lstm(x, (h0, c0))
+        x = self.dropout(self.activation(x))
+        x = self.linear_out(x)
         return x, (hn, cn)
 
 
@@ -113,7 +183,7 @@ class model_state(nn.Module):
         self.hidden_dim = cfg.model.hidden_dim
 
         self.backbone = backbone[cfg.model.backbone](
-            self.input_dim, self.output_dim, self.hidden_dim
+            self.cfg
         )
 
     def forward(self, x, m=None):
@@ -126,4 +196,13 @@ backbone = {
     "fc": basic_MLP,
     "gru": basic_GRU,
     "lstm": basic_LSTM,
+    "dfc": dropout_MLP,
+    "dgru": dropout_GRU,
+    "dlstm": dropout_LSTM,
+}
+
+activation = {
+    "tanh": nn.Tanh,
+    "sigm": nn.Sigmoid,
+    "relu": nn.ReLU,
 }
