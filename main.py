@@ -12,8 +12,8 @@ def get_configs():
 
 
 def main(cfg):
-    # worker = trainer_protocol[cfg.exp_prefix](cfg)
-    # worker.run()
+    worker = trainer_protocol[cfg.exp_prefix](cfg)
+    worker.run()
     worker = tester_protocol[cfg.exp_prefix](cfg)
     worker.run()
 
@@ -22,10 +22,12 @@ if __name__ == "__main__":
     trainer_protocol = {
         "policy": trainer.Trainer_policy,
         "dm": trainer.Trainer_dynamic_model,
+        "mp_policy": trainer.Trainer_model_predictive_policy_learning,
     }
     tester_protocol = {
         "policy": tester.Tester_policy,
         "dm": tester.Tester_dynamic_model,
+        "mp_policy": tester.Tester_policy,
     }
     config = get_configs()
     main(config)

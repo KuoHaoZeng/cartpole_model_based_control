@@ -44,7 +44,7 @@ data:
 
 train:
     num_epoch: 100
-    lr: 0.01
+    lr: 0.001
     lr_ms: [70, 90]
     save_iter: 10
 

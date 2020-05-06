@@ -1,0 +1,93 @@
+
+mode: "train"
+
+exp_prefix: "mp_policy"
+
+base_dir: "results/{{exp_prefix}}/{{model.backbone}}_{{dm_model.model.backbone}}_sim_0.0lambda_2"
+log_dir: "log.jsonl"
+
+checkpoint_dir: "{{base_dir}}/checkpoints"
+checkpoint_file: best_model
+
+framework:
+    seed: 12345
+    num_thread: 4
+    num_gpu: 1
+
+model:
+    protocol: state # {state, image}
+    backbone: dfc # {fc, gru, lstm, dfc, dgru, dlstm}
+    hidden_dim: 64
+    num_layers: 1 # only work for gru and lstm right now
+    dropout_p: 0.05 # only work for the model has dropout layer
+    activation_func: tanh # {tanh, sigm, relu}
+
+data:
+    protocol: state
+    delta_t: 0.05
+    horizon: 50
+    input_dim: 5
+    output_dim: 1
+    batch_size: 50
+    num_datapoints_per_epoch: 50
+    num_traj_samples: 10
+    expert_policy: swing_up # {random, swing_up}
+    policy_dir: 'data/policy.npz'
+    default_init_state: [0.01, 0.01, 0.5, 0.1] # note that we are going to do init_state[2] * np.pi in the script
+    image:
+        cart_width: 1.0
+        cart_height: 0.5
+        pole_length: 1.0
+        pole_thickness: 3.0
+        figsize: [4, 3]
+        alpha: 0.5
+
+dm_model:
+    exp_prefix: "dm"
+
+    base_dir: "results/{{dm_model.exp_prefix}}/{{dm_model.model.backbone}}"
+    log_dir: "log.jsonl"
+
+    checkpoint_dir: "{{dm_model.base_dir}}/checkpoints"
+    checkpoint_file: best_model
+
+    model:
+        protocol: state # {state, image}
+        backbone: dlstm # {fc, gru, lstm, dfc, dgru, dlstm}
+        hidden_dim: 64
+        num_layers: 1 # only work for gry and lstm right now
+        dropout_p: 0.05 # only work for the model has dropout layer
+        activation_func: tanh # {tanh, sigm, relu}
+
+    data:
+        protocol: state
+        delta_t: 0.05
+        horizon: 50
+        input_dim: 6
+        output_dim: 4
+        batch_size: 50
+        num_datapoints_per_epoch: 50
+        num_traj_samples: 10
+        expert_policy: swing_up # {random, swing_up}
+        policy_dir: 'data/policy.npz'
+        default_init_state: [0.01, 0.01, 0.5, 0.1] # note that we are going to do init_state[2] * np.pi in the script
+        image:
+            cart_width: 1.0
+            cart_height: 0.5
+            pole_length: 1.0
+            pole_thickness: 3.0
+            figsize: [4, 3]
+            alpha: 0.5
+
+train:
+    num_epoch: 100
+    lr: 0.01
+    lr_ms: [70, 90]
+    LAMBDA: 0.0
+    save_iter: 10
+
+test:
+    gt_title: swing_up
+    model_title: behavior_cloning
+    film: True
+    video_name: "{{model.protocol}}_{{model.backbone}}"
