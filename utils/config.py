@@ -134,13 +134,19 @@ class Config(AttrDict):
                             if isinstance(value, str):
                                 v = "{}{}{}".format(pre_remain, value, pos_remain)
                             else:
-                                v = value
+                                if len(pre_remain) > 0 and isinstance(pre_remain, str):
+                                    v = "{}{}{}".format(pre_remain, value, pos_remain)
+                                else:
+                                    v = value
                         elif target_key in self.all_keys:
                             value = self.org_dict[target_key]
                             if isinstance(value, str):
                                 v = "{}{}{}".format(pre_remain, value, pos_remain)
                             else:
-                                v = value
+                                if len(pre_remain) > 0 and isinstance(pre_remain, str):
+                                    v = "{}{}{}".format(pre_remain, value, pos_remain)
+                                else:
+                                    v = value
                         else:
                             raise KeyError
             output_dict[k] = v

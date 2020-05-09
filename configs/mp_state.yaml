@@ -3,7 +3,7 @@ mode: "train"
 
 exp_prefix: "mp_policy"
 
-base_dir: "results/{{exp_prefix}}/{{model.backbone}}_{{dm_model.model.backbone}}_sim_0.0lambda_2"
+base_dir: "results/{{exp_prefix}}/{{model.backbone}}_{{dm_model.model.backbone}}_sim_{{train.LAMBDA}}lambda"
 log_dir: "log.jsonl"
 
 checkpoint_dir: "{{base_dir}}/checkpoints"
@@ -53,7 +53,7 @@ dm_model:
 
     model:
         protocol: state # {state, image}
-        backbone: dlstm # {fc, gru, lstm, dfc, dgru, dlstm}
+        backbone: dfc # {fc, gru, lstm, dfc, dgru, dlstm}
         hidden_dim: 64
         num_layers: 1 # only work for gry and lstm right now
         dropout_p: 0.05 # only work for the model has dropout layer

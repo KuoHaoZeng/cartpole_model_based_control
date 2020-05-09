@@ -5,7 +5,7 @@ import numpy as np
 from network import network
 from data import dataset
 from data.visualization import Visualizer
-import cv2
+import cv2, json
 import matplotlib.pyplot as plt
 
 plt.style.use("ggplot")
@@ -40,6 +40,9 @@ class Tester:
         self.bar = progressbar.ProgressBar(
             max_value=config.data.batch_size, widgets=widgets, term_width=100
         )
+
+        ### logging
+        self.logger = open("{}/{}.json".format(config.base_dir, config.mode), 'w')
 
         ### model
         self.model = model_protocol[config.model.protocol](config)
@@ -233,6 +236,8 @@ class Tester_policy(Tester):
                 np.mean(rollout_losses), np.std(rollout_losses)
             )
         )
+        json.dump({"L2_Loss": losses, "rollout_L2_Loss": rollout_losses}, self.logger)
+        self.logger.close()
 
 
 class Tester_dynamic_model(Tester):
