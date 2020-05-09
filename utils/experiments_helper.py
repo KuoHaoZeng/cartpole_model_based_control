@@ -1,7 +1,7 @@
 from multiprocessing import Process
 from utils.config import Replaced_Config
 from scripts import trainer, tester
-import torch, os
+import os, torch
 import numpy as np
 
 trainer_protocol = {

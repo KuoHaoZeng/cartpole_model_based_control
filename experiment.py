@@ -3,6 +3,11 @@ from utils.config import Config
 from utils.get_all_experiments_results import output_jsonlines_results, output_txt_results
 from utils.experiments_helper import Worker, get_all_possible_experiments_options
 from multiprocessing import Queue
+from multiprocessing import set_start_method
+try:
+    set_start_method('spawn')
+except RuntimeError:
+    pass
 
 
 def get_configs():
@@ -35,6 +40,6 @@ def main(config, num_workers, options):
 if __name__ == "__main__":
     options = {"dm_model.model.backbone": ["dfc", "dlstm", "dgru"],
                "model.backbone": ["fc", "dfc", "gru", "dgru", "lstm", "dlstm"],
-               "train.LAMBDA": [0.0, 0.01, 0.1]}
+               "train.LAMBDA": [0.0, 0.01, 0.1, 0.15]}
     config, num_workers = get_configs()
     main(config, num_workers, options)
