@@ -42,7 +42,7 @@ class Tester:
         )
 
         ### logging
-        self.logger = open("{}/{}.json".format(config.base_dir, config.mode), 'w')
+        self.logger = open("{}/{}.json".format(config.base_dir, 'test'), 'w')
 
         ### model
         self.model = model_protocol[config.model.protocol](config)
@@ -236,7 +236,8 @@ class Tester_policy(Tester):
                 np.mean(rollout_losses), np.std(rollout_losses)
             )
         )
-        json.dump({"L2_Loss": losses, "rollout_L2_Loss": rollout_losses}, self.logger)
+        json.dump({"L2_Loss": np.array(losses).tolist(),
+                   "rollout_L2_Loss": np.array(rollout_losses).tolist()}, self.logger)
         self.logger.close()
 
 

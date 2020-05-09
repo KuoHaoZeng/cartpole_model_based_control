@@ -38,6 +38,10 @@ class AttrDict(dict):
                 yaml_dict[key] = value
         return yaml_dict
 
+    def save(self, filename):
+        my_yaml = self.yaml()
+        yaml.safe_dump(my_yaml, open(filename, 'w'))
+
     def __repr__(self):
         """Print all variables."""
         ret_str = []
@@ -93,17 +97,18 @@ class Config(AttrDict):
             /mnt/data/imagenet
     """
 
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, replace=True):
         assert os.path.exists(filename), "File {} not exist.".format(filename)
         try:
             with open(filename, "r") as f:
                 cfg_dict = yaml.safe_load(f)
         except EnvironmentError:
             print('Please check the file with name of "%s"', filename)
-        self.all_keys = []
-        self.org_dict = dict(cfg_dict)
-        cfg_dict = self.replace_variable(cfg_dict)
-        cfg_dict = self.replace_variable(cfg_dict)
+        if replace:
+            self.all_keys = []
+            self.org_dict = dict(cfg_dict)
+            cfg_dict = self.replace_variable(cfg_dict)
+            cfg_dict = self.replace_variable(cfg_dict)
         super(Config, self).__init__(cfg_dict)
 
     def get_recursive_value(self, d, keys):
@@ -151,3 +156,11 @@ class Config(AttrDict):
                             raise KeyError
             output_dict[k] = v
         return output_dict
+
+class Replaced_Config(Config):
+    def __init__(self, cfg_dict):
+        self.all_keys = []
+        self.org_dict = dict(cfg_dict)
+        cfg_dict = self.replace_variable(cfg_dict)
+        cfg_dict = self.replace_variable(cfg_dict)
+        super(Config, self).__init__(cfg_dict)
