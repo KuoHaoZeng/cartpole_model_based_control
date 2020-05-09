@@ -9,7 +9,7 @@ import numpy as np
 trainer_protocol = {
     "policy": trainer.Trainer_policy,
     "dm": trainer.Trainer_dynamic_model,
-    "mp_policy": trainer.Trainer_model_predictive_policy_learning,
+    "mp_policy": trainer.Trainer_model_predictive_policy_learning_v2,
 }
 tester_protocol = {
     "policy": tester.Tester_policy,

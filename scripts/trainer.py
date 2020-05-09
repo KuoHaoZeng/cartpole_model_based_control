@@ -197,16 +197,8 @@ class Trainer_model_predictive_policy_learning(Trainer):
         self.load_checkpoints(configs.dm_model, self.dm_model)
         if configs.framework.num_gpu > 0:
             self.dm_model.to(device=0)
-        # self.dm_model.eval()
-        # if configs.dm_model.model.backbone.startswith("d"):
-        #    self.turn_on_dropout(self.dm_model)
 
         self.criterion = nn.L1Loss()
-
-    def turn_on_dropout(self, model):
-        for m in model.modules():
-            if m.__class__.__name__.startswith("Dropout"):
-                m.train()
 
     def augmented_state(self, state):
         """
@@ -336,6 +328,132 @@ class Trainer_model_predictive_policy_learning(Trainer):
                     )
                     * epoch,
                 )
+                losses.append(l.detach().cpu().numpy())
+            if epoch % self.cfg.train.save_iter == 0:
+                self.save_checkpoints(losses)
+            self.scheduler.step()
+            self.bar.update(epoch)
+        print("finish!")
+
+
+class Trainer_model_predictive_policy_learning_v2(Trainer):
+    def __init__(self, configs):
+        super(Trainer_model_predictive_policy_learning_v2, self).__init__(configs)
+
+        self.dm_model = model_protocol[configs.dm_model.model.protocol](
+            configs.dm_model
+        )
+        self.load_checkpoints(configs.dm_model, self.dm_model)
+        if configs.framework.num_gpu > 0:
+            self.dm_model.to(device=0)
+
+        self.criterion = nn.L1Loss()
+
+    def augmented_state(self, state):
+        """
+        :param state: cartpole state
+        :param action: action applied to state
+        :return: an augmented state for training GP dynamics
+        """
+        dtheta, dx, theta, x = (
+            state[:, :, 0],
+            state[:, :, 1],
+            state[:, :, 2],
+            state[:, :, 3],
+        )
+        return torch.cat(
+            [
+                x.unsqueeze(2),
+                dx.unsqueeze(2),
+                dtheta.unsqueeze(2),
+                torch.sin(theta).unsqueeze(2),
+                torch.cos(theta).unsqueeze(2),
+            ],
+            dim=2,
+        )
+
+    def cov(self, m):
+        mean = torch.mean(m, dim=0)
+        m = m - mean
+        cov = m.transpose(0, 1).mm(m)
+        return cov
+
+    def run(self):
+        losses = []
+        for epoch in range(1, self.cfg.train.num_epoch + 1):
+            for idx, (imgs, s, x, y) in enumerate(self.dataloader):
+                if self.cfg.framework.num_gpu > 0:
+                    s, x, y = s.to(device=0), x.to(device=0), y.to(device=0)
+
+                y_action = x[:, :, -1]
+                x = x[:, :, :-1]
+
+                # forward
+                if isinstance(self.dataset, dataset.image_dataset):
+                    p, _ = self.model(imgs)
+                else:
+                    p, _ = self.model(x)
+                pred_action = p.view_as(y_action)
+
+                # loss
+                loss_policy = self.criterion(pred_action, y_action)
+
+                delta_states = []
+                for n in range(self.cfg.dm_model.data.num_traj_samples):
+                    dm_state = torch.cat([x, p], dim=2)
+                    delta_state, _ = self.dm_model(dm_state)
+                    delta_states.append(delta_state.unsqueeze(0))
+
+                delta_states = torch.cat(delta_states, dim=0)
+                delta_states = delta_states.view(
+                    self.cfg.dm_model.data.num_traj_samples, -1
+                )
+                cov = self.cov(delta_states)
+                loss_uncertainty = cov.trace() / (
+                        self.cfg.data.horizon
+                        * self.cfg.data.batch_size
+                        * self.cfg.dm_model.data.output_dim
+                        * self.cfg.dm_model.data.num_traj_samples
+                )
+                loss_policy = loss_policy / (self.cfg.data.horizon)
+                l = loss_policy + self.cfg.train.LAMBDA * loss_uncertainty
+
+                # backprop
+                self.model.zero_grad()
+                l.backward()
+                self.optimizer.step()
+
+                # log
+                self.logger.add_scalar(
+                    "{}/loss".format(self.cfg.mode),
+                    l.data,
+                    idx
+                    + (
+                            self.cfg.data.num_datapoints_per_epoch
+                            / self.cfg.data.batch_size
+                    )
+                    * epoch,
+                    )
+                self.logger.add_scalar(
+                    "{}/loss_policy".format(self.cfg.mode),
+                    loss_policy.data,
+                    idx
+                    + (
+                            self.cfg.data.num_datapoints_per_epoch
+                            / self.cfg.data.batch_size
+                    )
+                    * epoch,
+                    )
+                self.logger.add_scalar(
+                    "{}/loss_uncertainty".format(self.cfg.mode),
+                    loss_uncertainty.data,
+                    idx
+                    + (
+                            self.cfg.data.num_datapoints_per_epoch
+                            / self.cfg.data.batch_size
+                    )
+                    * epoch,
+                    )
                 losses.append(l.detach().cpu().numpy())
             if epoch % self.cfg.train.save_iter == 0:
                 self.save_checkpoints(losses)
