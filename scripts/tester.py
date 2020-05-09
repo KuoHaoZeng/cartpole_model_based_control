@@ -416,3 +416,12 @@ class Tester_dynamic_model(Tester):
                 np.mean(rollout_losses), np.std(rollout_losses)
             )
         )
+        json.dump(
+            {
+                "L2_Loss": np.array(losses).tolist(),
+                "rollout_L2_Loss": np.array(rollout_losses).tolist(),
+            },
+            self.logger,
+        )
+        self.logger.close()
+
