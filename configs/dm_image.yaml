@@ -16,7 +16,7 @@ framework:
 
 model:
     protocol: image # {state, image}
-    backbone: dfc # {fc, gru, lstm, dfc, dgru, dlstm}
+    backbone: dlstm # {fc, gru, lstm, dfc, dgru, dlstm}
     backbone_cnn: basic # {basic}
     hidden_dim: 64
     num_layers: 1 # only work for gry and lstm right now
@@ -54,4 +54,4 @@ test:
     gt_title: Swing-up sim rollout
     model_title: NN Prediction
     film: True
-    video_name: "{{model.protocol}}_{{model.backbone}}"
+    video_name: "{{exp_prefix}}_{{model.protocol}}_{{model.backbone}}"

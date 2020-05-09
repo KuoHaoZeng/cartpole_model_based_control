@@ -1,14 +1,4 @@
-import argparse
-from utils.config import Config
-from scripts import trainer, tester
-
-
-def get_configs():
-    parser = argparse.ArgumentParser(description="We are the best!!!")
-    parser.add_argument("--config", type=str, default="configs/dm_state.yaml")
-    args = parser.parse_args()
-    config = Config(args.config)
-    return config
+from scripts.experiments_helper import trainer_protocol, tester_protocol, get_configs
 
 
 def main(cfg):
@@ -19,15 +9,5 @@ def main(cfg):
 
 
 if __name__ == "__main__":
-    trainer_protocol = {
-        "policy": trainer.Trainer_policy,
-        "dm": trainer.Trainer_dynamic_model,
-        "mp_policy": trainer.Trainer_model_predictive_policy_learning,
-    }
-    tester_protocol = {
-        "policy": tester.Tester_policy,
-        "dm": tester.Tester_dynamic_model,
-        "mp_policy": tester.Tester_policy,
-    }
-    config = get_configs()
+    config, _ = get_configs()
     main(config)

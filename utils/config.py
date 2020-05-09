@@ -40,7 +40,7 @@ class AttrDict(dict):
 
     def save(self, filename):
         my_yaml = self.yaml()
-        yaml.safe_dump(my_yaml, open(filename, 'w'))
+        yaml.safe_dump(my_yaml, open(filename, "w"))
 
     def __repr__(self):
         """Print all variables."""
@@ -156,6 +156,7 @@ class Config(AttrDict):
                             raise KeyError
             output_dict[k] = v
         return output_dict
+
 
 class Replaced_Config(Config):
     def __init__(self, cfg_dict):

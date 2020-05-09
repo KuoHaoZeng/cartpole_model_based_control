@@ -1,6 +1,8 @@
-from multiprocessing import Process
+import argparse
+from utils.config import Config
 from utils.config import Replaced_Config
 from scripts import trainer, tester
+from multiprocessing import Process
 import os, torch
 import numpy as np
 
@@ -14,6 +16,15 @@ tester_protocol = {
     "dm": tester.Tester_dynamic_model,
     "mp_policy": tester.Tester_policy,
 }
+
+
+def get_configs():
+    parser = argparse.ArgumentParser(description="We are the best!!!")
+    parser.add_argument("--config", type=str, default="configs/dm_state.yaml")
+    parser.add_argument("--n", type=int, default=2)
+    args = parser.parse_args()
+    config = Config(args.config, False)
+    return config, args.n
 
 
 def get_all_possible_experiments_options(options, queue):
@@ -55,9 +66,9 @@ class Worker(Process):
         self.queue = queue
 
     def replace_recursively(self, yaml, key, value):
-        k = key.split('.')[0]
+        k = key.split(".")[0]
         if isinstance(yaml[k], dict):
-            new_key = '.'.join(key.split('.')[1:])
+            new_key = ".".join(key.split(".")[1:])
             yaml[k] = self.replace_recursively(yaml[k], new_key, value)
         else:
             if isinstance(value, float):

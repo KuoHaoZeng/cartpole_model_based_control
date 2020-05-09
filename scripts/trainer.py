@@ -191,12 +191,14 @@ class Trainer_model_predictive_policy_learning(Trainer):
     def __init__(self, configs):
         super(Trainer_model_predictive_policy_learning, self).__init__(configs)
 
-        self.dm_model = model_protocol[configs.dm_model.model.protocol](configs.dm_model)
+        self.dm_model = model_protocol[configs.dm_model.model.protocol](
+            configs.dm_model
+        )
         self.load_checkpoints(configs.dm_model, self.dm_model)
         if configs.framework.num_gpu > 0:
             self.dm_model.to(device=0)
-        #self.dm_model.eval()
-        #if configs.dm_model.model.backbone.startswith("d"):
+        # self.dm_model.eval()
+        # if configs.dm_model.model.backbone.startswith("d"):
         #    self.turn_on_dropout(self.dm_model)
 
         self.criterion = nn.L1Loss()
@@ -212,17 +214,27 @@ class Trainer_model_predictive_policy_learning(Trainer):
         :param action: action applied to state
         :return: an augmented state for training GP dynamics
         """
-        dtheta, dx, theta, x = state[:, :, 0], state[:, :, 1], state[:, :, 2], state[:, :, 3]
-        return torch.cat([x.unsqueeze(2),
-                          dx.unsqueeze(2),
-                          dtheta.unsqueeze(2),
-                          torch.sin(theta).unsqueeze(2),
-                          torch.cos(theta).unsqueeze(2)], dim= 2)
+        dtheta, dx, theta, x = (
+            state[:, :, 0],
+            state[:, :, 1],
+            state[:, :, 2],
+            state[:, :, 3],
+        )
+        return torch.cat(
+            [
+                x.unsqueeze(2),
+                dx.unsqueeze(2),
+                dtheta.unsqueeze(2),
+                torch.sin(theta).unsqueeze(2),
+                torch.cos(theta).unsqueeze(2),
+            ],
+            dim=2,
+        )
 
     def cov(self, m):
         mean = torch.mean(m, dim=0)
-        m = (m - mean)
-        cov = m.transpose(0,1).mm(m)
+        m = m - mean
+        cov = m.transpose(0, 1).mm(m)
         return cov
 
     def run(self):
@@ -239,7 +251,9 @@ class Trainer_model_predictive_policy_learning(Trainer):
                 for t in range(self.cfg.data.horizon):
                     y_action = []
                     for b in range(self.cfg.data.batch_size):
-                        gt_a = self.dataset.policy.predict(state[b, 0, :].detach().cpu().numpy())
+                        gt_a = self.dataset.policy.predict(
+                            state[b, 0, :].detach().cpu().numpy()
+                        )
                         y_action.append(gt_a)
                     y_action = torch.Tensor(y_action)
                     if self.cfg.framework.num_gpu > 0:
@@ -260,23 +274,29 @@ class Trainer_model_predictive_policy_learning(Trainer):
                     delta_states.append(delta_state_n)
                     dm_memory = dm_memory_n
 
-                    #state += delta_state.detach()
+                    # state += delta_state.detach()
                     next_state = []
                     for b in range(self.cfg.data.batch_size):
-                        next_s = self.dataset.sim.step(state[b, 0, :].detach().cpu().numpy(),
-                                                       [pred_a[b, 0, 0].detach().cpu().numpy()],
-                                                       noisy=True)
+                        next_s = self.dataset.sim.step(
+                            state[b, 0, :].detach().cpu().numpy(),
+                            [pred_a[b, 0, 0].detach().cpu().numpy()],
+                            noisy=True,
+                        )
                         next_state.append(next_s)
                     state = torch.Tensor(np.array(next_state)).unsqueeze(1)
                     if self.cfg.framework.num_gpu > 0:
                         state = state.to(device=0)
                 delta_states = torch.cat(delta_states, dim=2)
-                delta_states = delta_states.view(self.cfg.dm_model.data.num_traj_samples, -1)
+                delta_states = delta_states.view(
+                    self.cfg.dm_model.data.num_traj_samples, -1
+                )
                 cov = self.cov(delta_states)
-                loss_uncertainty = cov.trace() / (self.cfg.data.horizon *
-                                                  self.cfg.data.batch_size *
-                                                  self.cfg.dm_model.data.output_dim *
-                                                  self.cfg.dm_model.data.num_traj_samples)
+                loss_uncertainty = cov.trace() / (
+                    self.cfg.data.horizon
+                    * self.cfg.data.batch_size
+                    * self.cfg.dm_model.data.output_dim
+                    * self.cfg.dm_model.data.num_traj_samples
+                )
                 loss_policy = loss_policy / (self.cfg.data.horizon)
                 l = loss_policy + self.cfg.train.LAMBDA * loss_uncertainty
 
@@ -291,8 +311,8 @@ class Trainer_model_predictive_policy_learning(Trainer):
                     l.data,
                     idx
                     + (
-                            self.cfg.data.num_datapoints_per_epoch
-                            / self.cfg.data.batch_size
+                        self.cfg.data.num_datapoints_per_epoch
+                        / self.cfg.data.batch_size
                     )
                     * epoch,
                 )
@@ -301,8 +321,8 @@ class Trainer_model_predictive_policy_learning(Trainer):
                     loss_policy.data,
                     idx
                     + (
-                            self.cfg.data.num_datapoints_per_epoch
-                            / self.cfg.data.batch_size
+                        self.cfg.data.num_datapoints_per_epoch
+                        / self.cfg.data.batch_size
                     )
                     * epoch,
                 )
@@ -311,8 +331,8 @@ class Trainer_model_predictive_policy_learning(Trainer):
                     loss_uncertainty.data,
                     idx
                     + (
-                            self.cfg.data.num_datapoints_per_epoch
-                            / self.cfg.data.batch_size
+                        self.cfg.data.num_datapoints_per_epoch
+                        / self.cfg.data.batch_size
                     )
                     * epoch,
                 )

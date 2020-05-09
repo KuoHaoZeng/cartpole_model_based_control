@@ -1,22 +1,19 @@
-import argparse
-from utils.config import Config
-from utils.get_all_experiments_results import output_jsonlines_results, output_txt_results
-from utils.experiments_helper import Worker, get_all_possible_experiments_options
+from utils.get_all_experiments_results import (
+    output_jsonlines_results,
+    output_txt_results,
+)
+from scripts.experiments_helper import (
+    Worker,
+    get_all_possible_experiments_options,
+    get_configs,
+)
 from multiprocessing import Queue
 from multiprocessing import set_start_method
+
 try:
-    set_start_method('spawn')
+    set_start_method("spawn")
 except RuntimeError:
     pass
-
-
-def get_configs():
-    parser = argparse.ArgumentParser(description="We are the best!!!")
-    parser.add_argument("--config", type=str, default="configs/dm_state.yaml")
-    parser.add_argument("--n", type=int, default=2)
-    args = parser.parse_args()
-    config = Config(args.config, False)
-    return config, args.n
 
 
 def main(config, num_workers, options):
@@ -38,8 +35,10 @@ def main(config, num_workers, options):
 
 
 if __name__ == "__main__":
-    options = {"dm_model.model.backbone": ["dfc", "dlstm", "dgru"],
-               "model.backbone": ["fc", "dfc", "gru", "dgru", "lstm", "dlstm"],
-               "train.LAMBDA": [0.0, 0.01, 0.1, 0.15]}
+    options = {
+        "dm_model.model.backbone": ["dfc", "dlstm", "dgru"],
+        "model.backbone": ["fc", "dfc", "gru", "dgru", "lstm", "dlstm"],
+        "train.LAMBDA": [0.0, 0.01, 0.1, 0.15],
+    }
     config, num_workers = get_configs()
     main(config, num_workers, options)
