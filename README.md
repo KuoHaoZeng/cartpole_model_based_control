@@ -4,7 +4,7 @@
 
 By Kuo-Hao Zeng, Pengcheng Chen, Mengying Leng, Xiaojuan Wang
 
-<img src="fig/cartpole_BC.gif" style="zoom: 75%;" />
+<p align="center"><img src="fig/cartpole_BC.gif" style="zoom:75%;" /></p>
 
 ### **Introduction**
 
