@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="8fdcc982-a177-4b2a-a52a-925cb85312c5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/final_report.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/guided_proj_1.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/experiment.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiment.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -148,7 +147,7 @@
       <workItem from="1588745438075" duration="14338000" />
       <workItem from="1588988334191" duration="18410000" />
       <workItem from="1589058755315" duration="635000" />
-      <workItem from="1589146498728" duration="4817000" />
+      <workItem from="1589146498728" duration="4826000" />
     </task>
     <servers />
   </component>

@@ -30,7 +30,7 @@ def main(config, num_workers, options):
 if __name__ == "__main__":
     options = {
         "framework.seed": [12345],
-        "dm_model.model.backbone": ["dfc", "dlstm", "dgru"],
+        "dm_model.model.backbone": ["dlstm"],
         "model.backbone": ["fc", "dfc", "gru", "dgru", "lstm", "dlstm"],
         "train.LAMBDA": [0.0, 0.01, 0.1, 0.15],
     }

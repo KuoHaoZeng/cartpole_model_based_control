@@ -94,7 +94,7 @@ dm_model:
 
 #### Do experiments on policy learning with a pretrained drop LSTM model with various experimental settings
 
-**Note**: assuming you have pretrained the dynamics model with `dfc`, `dgru`, and `dlstm`, the following script performs experiments with different hyparparameters setting defined in `experiment.py`.
+Assuming you have pretrained the dynamics model with `dlstm`, the following script performs experiments with different hyparparameters setting defined in `experiment.py`.
 
 ```
 # Train and test model with different experimental settings
@@ -107,8 +107,8 @@ You can change the hyparparameters which you would like to try in the `experimen
 ```
 if __name__ == "__main__":
     options = {
-        "framework.seed": [12345, 12346, 12347, 12348, 12349], # <--- indicates the name of results folder
-        "dm_model.model.backbone": ["dfc", "dlstm", "dgru"], # <--- indicates what are the backbones for dynamics model you want to try
+        "framework.seed": [12345], # <--- indicates what are the random seeds you want to try
+        "dm_model.model.backbone": ["dlstm"], # <--- indicates what are the backbones for dynamics model you want to try
         "model.backbone": ["fc", "dfc", "gru", "dgru", "lstm", "dlstm"], # <--- indicates what are the backbones for policy network you want to try
         "train.LAMBDA": [0.0, 0.01, 0.1, 0.15], # <--- indicates what are the lambda for policy learning you want to try
     }
