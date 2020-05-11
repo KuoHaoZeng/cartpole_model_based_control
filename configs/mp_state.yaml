@@ -2,8 +2,9 @@
 mode: "train"
 
 exp_prefix: "mp_policy"
+dir_prefix: "{{exp_prefix}}"
 
-base_dir: "results/{{exp_prefix}}/{{model.backbone}}_{{dm_model.model.backbone}}_sim_{{train.LAMBDA}}lambda"
+base_dir: "results/{{dir_prefix}}/{{model.backbone}}_{{dm_model.model.backbone}}_sim_{{train.LAMBDA}}lambda"
 log_dir: "log.jsonl"
 
 checkpoint_dir: "{{base_dir}}/checkpoints"
@@ -44,8 +45,9 @@ data:
 
 dm_model:
     exp_prefix: "dm"
+    dir_prefix: "{{dm_model.exp_prefix}}"
 
-    base_dir: "results/{{dm_model.exp_prefix}}/{{dm_model.model.backbone}}"
+    base_dir: "results/{{dm_model.dir_prefix}}/{{dm_model.model.backbone}}"
     log_dir: "log.jsonl"
 
     checkpoint_dir: "{{dm_model.base_dir}}/checkpoints"

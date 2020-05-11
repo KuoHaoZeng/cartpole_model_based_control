@@ -3,8 +3,14 @@
   <component name="ChangeListManager">
     <list default="true" id="8fdcc982-a177-4b2a-a52a-925cb85312c5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/dm_state.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/dm_state.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/mp_state.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/mp_state.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/policy_state.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/policy_state.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/experiment.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiment.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/experiments_helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/experiments_helper.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/trainer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/config.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -146,7 +152,9 @@
       <workItem from="1588031007596" duration="9564000" />
       <workItem from="1588073125925" duration="10479000" />
       <workItem from="1588745438075" duration="14338000" />
-      <workItem from="1588988334191" duration="18082000" />
+      <workItem from="1588988334191" duration="18410000" />
+      <workItem from="1589058755315" duration="635000" />
+      <workItem from="1589146498728" duration="4467000" />
     </task>
     <servers />
   </component>
@@ -179,6 +187,6 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/cartpole_model_based_control$main.coverage" NAME="main Coverage Results" MODIFIED="1588991261973" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/cartpole_model_based_control$exp.coverage" NAME="exp Coverage Results" MODIFIED="1589021363665" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/cartpole_model_based_control$exp.coverage" NAME="exp Coverage Results" MODIFIED="1589190280613" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

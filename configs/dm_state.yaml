@@ -2,8 +2,9 @@
 mode: "train"
 
 exp_prefix: "dm"
+dir_prefix: "{{exp_prefix}}"
 
-base_dir: "results/{{exp_prefix}}/{{model.backbone}}"
+base_dir: "results/{{dir_prefix}}/{{model.backbone}}"
 log_dir: "log.jsonl"
 
 checkpoint_dir: "{{base_dir}}/checkpoints"

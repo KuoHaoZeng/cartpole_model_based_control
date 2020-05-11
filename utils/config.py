@@ -164,4 +164,7 @@ class Replaced_Config(Config):
         self.org_dict = dict(cfg_dict)
         cfg_dict = self.replace_variable(cfg_dict)
         cfg_dict = self.replace_variable(cfg_dict)
+        cfg_dict = self.replace_variable(cfg_dict)
+        cfg_dict = self.replace_variable(cfg_dict)
+        cfg_dict = self.replace_variable(cfg_dict)
         super(Config, self).__init__(cfg_dict)

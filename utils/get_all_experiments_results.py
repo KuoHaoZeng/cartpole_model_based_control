@@ -68,4 +68,4 @@ def output_txt_results(base_dir, std=True):
 if __name__ == "__main__":
     base_dir = sys.argv[1]
     output_jsonlines_results(base_dir)
-    output_txt_results(base_dir)
+    output_txt_results(base_dir, False)

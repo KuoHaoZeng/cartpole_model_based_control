@@ -9,7 +9,7 @@ import numpy as np
 trainer_protocol = {
     "policy": trainer.Trainer_policy,
     "dm": trainer.Trainer_dynamic_model,
-    "mp_policy": trainer.Trainer_model_predictive_policy_learning_v2,
+    "mp_policy": trainer.Trainer_model_predictive_policy_learning,
 }
 tester_protocol = {
     "policy": tester.Tester_policy,
@@ -18,12 +18,12 @@ tester_protocol = {
 }
 
 
-def get_configs():
+def get_configs(replace=True):
     parser = argparse.ArgumentParser(description="We are the best!!!")
     parser.add_argument("--config", type=str, default="configs/dm_state.yaml")
     parser.add_argument("--n", type=int, default=2)
     args = parser.parse_args()
-    config = Config(args.config, False)
+    config = Config(args.config, replace)
     return config, args.n
 
 
@@ -73,6 +73,10 @@ class Worker(Process):
         else:
             if isinstance(value, float):
                 yaml[k] = float(value)
+            elif isinstance(value, int):
+                yaml[k] = int(value)
+            elif isinstance(value, np.int64):
+                yaml[k] = int(value)
             else:
                 yaml[k] = str(value)
         return yaml
@@ -80,6 +84,9 @@ class Worker(Process):
     def replace_options(self):
         yaml = self.config.yaml()
         options = self.queue.get()
+        yaml["base_dir"] = "results/{{dir_prefix}}/"
+        for k, v in options.items():
+            yaml["base_dir"] = "{}_{{{{{}}}}}".format(yaml["base_dir"], k)
         for k, v in options.items():
             yaml = self.replace_recursively(yaml, k, v)
         return Replaced_Config(yaml)

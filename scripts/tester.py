@@ -424,4 +424,3 @@ class Tester_dynamic_model(Tester):
             self.logger,
         )
         self.logger.close()
-

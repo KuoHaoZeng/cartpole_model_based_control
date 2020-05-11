@@ -1,7 +1,3 @@
-from utils.get_all_experiments_results import (
-    output_jsonlines_results,
-    output_txt_results,
-)
 from scripts.experiments_helper import (
     Worker,
     get_all_possible_experiments_options,
@@ -30,15 +26,13 @@ def main(config, num_workers, options):
     for n in range(num_workers):
         workers[n].join()
 
-    output_jsonlines_results("results/{}".format(config.exp_prefix))
-    output_txt_results("results/{}".format(config.exp_prefix))
-
 
 if __name__ == "__main__":
     options = {
+        "framework.seed": [12345],
         "dm_model.model.backbone": ["dfc", "dlstm", "dgru"],
         "model.backbone": ["fc", "dfc", "gru", "dgru", "lstm", "dlstm"],
         "train.LAMBDA": [0.0, 0.01, 0.1, 0.15],
     }
-    config, num_workers = get_configs()
+    config, num_workers = get_configs(False)
     main(config, num_workers, options)
