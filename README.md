@@ -1,10 +1,12 @@
-## Model-Based Cartpole Control (UW CSE571 Guided Project 1)
+## Behaviour Cloning of Cartpole Swing-up Policy with Model-Predictive Uncertainty Regularization
+
+### (UW CSE571 Guided Project 1)
 
 By Kuo-Hao Zeng, Pengcheng Chen, Mengying Leng, Xiaojuan Wang
 
 ### **Proposal**
 
-We are going to learn a CNN or RNN as a dynamic model of the cartpole. This dynamics model aims to predict the current state of the cartpole given the previous observations. We will try different settings such as various combinations of the observations (e.g., image only or state only or image + state), number of observations (e.g., {1, 2, 3} images or states), different model architectures (e.g., CNN, LSTM, GRU) etc. Then, by this learned dynamics model, we are going to learn a NN as a state estimator. The policy further outputs the action based on the state estimation. In this way, we optimize the state estimator by letting the policy mimic the swing up policy via behavior cloning. Furthermore, we have an optional idea about training the dynamic model by some Bayesian NN techniques such as “dynamic model(s)” or “dropout during the inference phase”. It allows us to measure the uncertainty of the prediction produced by the dynamic model(s). However, we leave it as an optional topic since we are not sure if we can make it ontime.
+In this project, we adopt the idea of uncertainty regularization [1] to learn a swing-up policy via behaviour cloning without interacting with the simulator. We make several modifications to adapt the learning framework for our focused task. We make several modifications to adapt the learning framework for cartpole swing-up task. (i.) since our policy learning entirely relies on BC, our policy network does not need to interact with the environment during the training phase. Therefore, we remove the simulator from our learning framework, except for the data collection process. (ii.) We use state observation instead of image observation to ease the learning of dynamic model. In this case, we are able to focus on the effectiveness of uncertainty regularization approach. (iii.) We slightly modify the learning framework by changing the policy cost to behaviour cloning objective to fit our problem setting. (iiii.) To make the focused task simple, we do not adopt the z-dropout technique proposed by original authors, we rather directly utilize the simplest dropout technique to perform Bayesian Neural Network.
 
 ### Set Up
 
@@ -30,70 +32,111 @@ We are going to learn a CNN or RNN as a dynamic model of the cartpole. This dyna
    pip install -r requirements.txt
    ```
 
-### Environment/Dataset
-
-Cartpole
-
-training data/validation data/testing data
-
-#### Generate your own data
-
-```
-TBD
-```
-
 ### Train and evaluate it!
 
-**Note**: You can always change or adjust the hyperparameters defined in the config file to change the setting such as how often you want to store a checkpoint, how large the learning rate you are going to use, what batch size you are going to use etc.
+**Note**: You can always change or adjust the hyperparameters defined in the config file to change the setting such as how often you want to store a checkpoint, how large the initial learning rate you are going to use, what batch size you are going to use etc.
 
-#### Test the pretrained model on validation/testing set
-
-```
-# Download the pretrained model
-wget xxx
-unzip pretrained.zip && mkdir results && mv pretrained/* results/ && rm pretrained.zip
-
-# Test the model
-python main.py --config configs/pretrained_action_sampler_test.yaml
-```
-
-#### Train a dynamic model
+#### Pretrain a dynamic model
 
 ```
-# Train
-python main.py --config configs/dm_train.yaml
-
-# Validate or Test
-python main.py --config configs/dm_val.yaml
-python main.py --config configs/dm_test.yaml
+# Train and test
+python main.py --config configs/dm_state.yaml
 ```
 
-#### Train a new state estimator with a trained dynamic model
+**Note**: the default model is dropout LSTM with dropout rate = 0.05. You can change them in the config file:
 
 ```
-# Prepare the trained forecaster
-cd results
-mkdir state_esti
-mkdir state_esti/checkpoints
-cp -r dm/checkpoints/$FORECASTER_YOU_LIKE_TO_USE se/checkpoints/0000000
-cd ..
-
-# Train
-python main.py --config configs/se_train.yaml
-
-# Validate or Test
-python main.py --config configs/se_val.yaml
-python main.py --config configs/se_test.yaml
+......
+model:
+	protocol: state
+	backbone: dlstm # {fc, gru, lstm, dfc, dgru, dlstm} <--- change the model backbone here
+	...
+	dropout_p: 0.05 # only work for the model has dropout layer <--- change the dropout rate here
+	...
+......
 ```
 
 #### Main Results for dynamics model
 
-| Model  | L2 difference |
-| :-------------: | :-------------: |
-| CNN | - |
-| LSTM | - |
-| GRU | - |
+|    Model     | L2 difference with simulator |
+| :----------: | :--------------------------: |
+|      FC      |         0.528±0.079          |
+|     GRU      |         0.354±0.063          |
+|     LSTM     |         0.229±0.058          |
+|  Dropout FC  |         0.559±0.114          |
+| Dropout GRU  |         0.416±0.064          |
+| Dropout LSTM |         0.252±0.040          |
 
-#### Main Results for policy learning
+#### Learn a swing-up by uncertainty regularization with the pretrained dynamic model
 
-a plot for rewards vs. iterations
+```
+# Train and test
+python main.py --config configs/mp_state.yaml
+```
+
+**Note**: you need to make sure the dynamics model defined in the `mp_state.yaml` pointing to the correct pretrained dynamics model:
+
+```
+......
+dm_model:
+	......
+	model:
+		protocol: state
+		backbone: dlstm # {fc, gru, lstm, dfc, dgru, dlstm} <--- change the model backbone here
+		...
+		dropout_p: 0.05 # only work for the model has dropout layer <--- change the dropout rate here
+		...
+	......
+......
+```
+
+#### Do experiments on policy learning with a pretrained drop LSTM model with various experimental settings
+
+**Note**: assuming you have pretrained the dynamics model with `dfc`, `dgru`, and `dlstm`, the following script performs experiments with different hyparparameters setting defined in `experiment.py`.
+
+```
+# Train and test model with different experimental settings
+# --n: indicates how many workers (n) you want to spawn for doing the experiments
+python experiment.py --config configs/mp_state.yaml --n 4
+```
+
+You can change the hyparparameters which you would like to try in the `experiment.py`:
+
+```
+......
+if __name__ == "__main__":
+		options = {
+				"framework.seed": [12345, 12346, 12347, 12348, 12349], # <--- indicates the name of results folder
+        "dm_model.model.backbone": ["dfc", "dlstm", "dgru"], # <--- indicates what are the backbones for dynamics model you want to try
+        "model.backbone": ["fc", "dfc", "gru", "dgru", "lstm", "dlstm"], # <--- indicates what are the backbones for policy network you want to try
+        "train.LAMBDA": [0.0, 0.01, 0.1, 0.15], # <--- indicates what are the lambda for policy learning you want to try
+		}
+......
+```
+
+**Note**: you can easily add experimental options based on the hyperparameters defined in the config files. For example, do experiments with different initial learning rate:
+
+```
+......
+if __name__ == "__main__":
+		options = {
+				"train.lr": [0.1, 0.01, 0.001],
+		}
+......
+```
+
+#### Main Results for policy learning with uncertainty regularzation
+
+#### Main Results for dynamics model
+
+|            Dynamics Model \ Policy Network             |    FC     |    GRU    |   LSTM    | Drpopout LSTM |
+| :----------------------------------------------------: | :-------: | :-------: | :-------: | :-----------: |
+| Dropout LSTM w/ **λ** = 0 (original behaviour cloning) |   0.649   | **0.537** |   0.534   |     0.539     |
+|              Dropout LSTM w/ **λ** = 0.01              | **0.629** |   0.543   |   0.516   |   **0.527**   |
+|              Dropout LSTM w/ **λ** = 0.1               |   0.631   |   0.540   |   0.527   |     0.554     |
+|              Dropout LSTM w/ **λ** = 0.15              |   0.646   |   0.550   | **0.510** |     0.539     |
+
+### Reference
+
+[1] Mikael Henaff, Alfredo Canziani, and Yann LeCun. Model-predictive policy learning with uncertainty regularization for driving in dense traffic. In *ICLR*, 2019.
+
