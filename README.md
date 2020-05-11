@@ -43,7 +43,7 @@ Check out our [introduction video](https://drive.google.com/file/d/1WZJ4ulTXD3X9
 
 ### Train and evaluate it!
 
-**Note**: You can always change or adjust the hyperparameters defined in the config file to change the setting such as how often you want to store a checkpoint, how large the initial learning rate you are going to use, what batch size you are going to use etc.
+You can always change or adjust the hyperparameters defined in the config file to change the setting such as how often you want to store a checkpoint, how large the initial learning rate you are going to use, what batch size you are going to use etc.
 
 #### Pretrain a dynamic model
 
@@ -52,7 +52,7 @@ Check out our [introduction video](https://drive.google.com/file/d/1WZJ4ulTXD3X9
 python main.py --config configs/dm_state.yaml
 ```
 
-**Note**: the default model is dropout LSTM with dropout rate = 0.05. You can change them in the config file:
+The default model is dropout LSTM with dropout rate = 0.05. You can change them in the config file:
 
 ```
 model:
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     }
 ```
 
-**Note**: you can easily add experimental options based on the hyperparameters defined in the config files. For example, do experiments with different initial learning rate:
+You can easily add experimental options based on the hyperparameters defined in the config files. For example, do experiments with different initial learning rate:
 
 ```
 if __name__ == "__main__":
