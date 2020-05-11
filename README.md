@@ -125,8 +125,6 @@ if __name__ == "__main__":
 
 #### Main Results for policy learning with uncertainty regularzation
 
-#### Main Results for dynamics model
-
 |            Dynamics Model \ Policy Network             |    FC     |    GRU    |   LSTM    | Drpopout LSTM |
 | :----------------------------------------------------: | :-------: | :-------: | :-------: | :-----------: |
 | Dropout LSTM w/ **λ** = 0 (original behaviour cloning) |   0.649   | **0.537** |   0.534   |     0.539     |
