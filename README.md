@@ -56,7 +56,6 @@ model:
     backbone: dlstm # {fc, gru, lstm, dfc, dgru, dlstm} <--- change the model backbone here
     ...
     dropout_p: 0.05 # only work for the model has dropout layer <--- change the dropout rate here
-    ...
 ```
 
 #### Main Results for dynamics model
@@ -81,13 +80,12 @@ python main.py --config configs/mp_state.yaml
 
 ```
 dm_model:
-	......
-	model:
-		protocol: state
-		backbone: dlstm # {fc, gru, lstm, dfc, dgru, dlstm} <--- change the model backbone here
-		...
-		dropout_p: 0.05 # only work for the model has dropout layer <--- change the dropout rate here
-		...
+    ......
+    model:
+        protocol: state
+        backbone: dlstm # {fc, gru, lstm, dfc, dgru, dlstm} <--- change the model backbone here
+        ...
+        dropout_p: 0.05 # only work for the model has dropout layer <--- change the dropout rate here
 ```
 
 #### Do experiments on policy learning with a pretrained drop LSTM model with various experimental settings
@@ -104,21 +102,21 @@ You can change the hyparparameters which you would like to try in the `experimen
 
 ```
 if __name__ == "__main__":
-	options = {
-			"framework.seed": [12345, 12346, 12347, 12348, 12349], # <--- indicates the name of results folder
-       "dm_model.model.backbone": ["dfc", "dlstm", "dgru"], # <--- indicates what are the backbones for dynamics model you want to try
-       "model.backbone": ["fc", "dfc", "gru", "dgru", "lstm", "dlstm"], # <--- indicates what are the backbones for policy network you want to try
-       "train.LAMBDA": [0.0, 0.01, 0.1, 0.15], # <--- indicates what are the lambda for policy learning you want to try
-	}
+    options = {
+        "framework.seed": [12345, 12346, 12347, 12348, 12349], # <--- indicates the name of results folder
+        "dm_model.model.backbone": ["dfc", "dlstm", "dgru"], # <--- indicates what are the backbones for dynamics model you want to try
+        "model.backbone": ["fc", "dfc", "gru", "dgru", "lstm", "dlstm"], # <--- indicates what are the backbones for policy network you want to try
+        "train.LAMBDA": [0.0, 0.01, 0.1, 0.15], # <--- indicates what are the lambda for policy learning you want to try
+    }
 ```
 
 **Note**: you can easily add experimental options based on the hyperparameters defined in the config files. For example, do experiments with different initial learning rate:
 
 ```
 if __name__ == "__main__":
-	options = {
-			"train.lr": [0.1, 0.01, 0.001],
-	}
+    options = {
+        "train.lr": [0.1, 0.01, 0.001],
+    }
 ```
 
 #### Main Results for policy learning with uncertainty regularzation
