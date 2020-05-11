@@ -4,7 +4,7 @@
 
 By Kuo-Hao Zeng, Pengcheng Chen, Mengying Leng, Xiaojuan Wang
 
-<img src="/Users/khzeng/Desktop/CSE571/cartpole_model_based_control/fig/cartpole_BC.gif" style="zoom: 75%;" />
+<img src="fig/cartpole_BC.gif" style="zoom: 75%;" />
 
 ### **Introduction**
 
