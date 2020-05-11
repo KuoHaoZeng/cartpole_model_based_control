@@ -13,7 +13,7 @@ In this project, we adopt the idea of uncertainty regularization [1] to learn a 
 - Since our policy learning entirely relies on BC, our policy network does not need to interact with the environment during the training phase. Therefore, we remove the simulator from our learning framework, except for the data collection process.
 - We use state observation instead of image observation to ease the learning of dynamic model. In this case, we are able to focus on the effectiveness of uncertainty regularization approach.
 - We slightly modify the learning framework by changing the policy cost to behaviour cloning objective to fit our problem setting.
-- To make the focused task simple, we do not adopt the z-dropout technique proposed by original authors, we rather directly utilize the simplest dropout technique to perform Bayesian Neural Network.
+- To make the focused task simple, we do not adopt the z-dropout technique proposed by original authors, we rather directly utilize the simplest dropout technique to perform Bayesian Neural Network (e.g., generate sub-network on-the-fly by different dropout masks).
 
 Check out our [introduction video](https://drive.google.com/file/d/1WZJ4ulTXD3X9bEGl0UXfBG9y3CgtK0Ts/view), [final report](pdf/final_report.pdf), and some [qualitative results](https://drive.google.com/open?id=1vRpvi3G-4KpnD6k95rBvm104NjcYg501).
 
