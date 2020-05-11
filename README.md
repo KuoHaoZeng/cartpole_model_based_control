@@ -6,7 +6,12 @@ By Kuo-Hao Zeng, Pengcheng Chen, Mengying Leng, Xiaojuan Wang
 
 ### **Proposal**
 
-In this project, we adopt the idea of uncertainty regularization [1] to learn a swing-up policy via behaviour cloning without interacting with the simulator. We make several modifications to adapt the learning framework for our focused task. We make several modifications to adapt the learning framework for cartpole swing-up task. (i.) since our policy learning entirely relies on BC, our policy network does not need to interact with the environment during the training phase. Therefore, we remove the simulator from our learning framework, except for the data collection process. (ii.) We use state observation instead of image observation to ease the learning of dynamic model. In this case, we are able to focus on the effectiveness of uncertainty regularization approach. (iii.) We slightly modify the learning framework by changing the policy cost to behaviour cloning objective to fit our problem setting. (iiii.) To make the focused task simple, we do not adopt the z-dropout technique proposed by original authors, we rather directly utilize the simplest dropout technique to perform Bayesian Neural Network.
+In this project, we adopt the idea of uncertainty regularization [1] to learn a swing-up policy via behaviour cloning without interacting with the simulator. We make several modifications to adapt the learning framework for our focused task. We make several modifications to adapt the learning framework for cartpole swing-up task:
+
+- Since our policy learning entirely relies on BC, our policy network does not need to interact with the environment during the training phase. Therefore, we remove the simulator from our learning framework, except for the data collection process.
+- We use state observation instead of image observation to ease the learning of dynamic model. In this case, we are able to focus on the effectiveness of uncertainty regularization approach.
+- We slightly modify the learning framework by changing the policy cost to behaviour cloning objective to fit our problem setting.
+- To make the focused task simple, we do not adopt the z-dropout technique proposed by original authors, we rather directly utilize the simplest dropout technique to perform Bayesian Neural Network.
 
 ### Set Up
 
@@ -46,14 +51,13 @@ python main.py --config configs/dm_state.yaml
 **Note**: the default model is dropout LSTM with dropout rate = 0.05. You can change them in the config file:
 
 ```
-......
+
 model:
-	protocol: state
+	...
 	backbone: dlstm # {fc, gru, lstm, dfc, dgru, dlstm} <--- change the model backbone here
 	...
 	dropout_p: 0.05 # only work for the model has dropout layer <--- change the dropout rate here
 	...
-......
 ```
 
 #### Main Results for dynamics model
@@ -77,7 +81,6 @@ python main.py --config configs/mp_state.yaml
 **Note**: you need to make sure the dynamics model defined in the `mp_state.yaml` pointing to the correct pretrained dynamics model:
 
 ```
-......
 dm_model:
 	......
 	model:
@@ -86,8 +89,6 @@ dm_model:
 		...
 		dropout_p: 0.05 # only work for the model has dropout layer <--- change the dropout rate here
 		...
-	......
-......
 ```
 
 #### Do experiments on policy learning with a pretrained drop LSTM model with various experimental settings
@@ -103,26 +104,22 @@ python experiment.py --config configs/mp_state.yaml --n 4
 You can change the hyparparameters which you would like to try in the `experiment.py`:
 
 ```
-......
 if __name__ == "__main__":
-		options = {
-				"framework.seed": [12345, 12346, 12347, 12348, 12349], # <--- indicates the name of results folder
-        "dm_model.model.backbone": ["dfc", "dlstm", "dgru"], # <--- indicates what are the backbones for dynamics model you want to try
-        "model.backbone": ["fc", "dfc", "gru", "dgru", "lstm", "dlstm"], # <--- indicates what are the backbones for policy network you want to try
-        "train.LAMBDA": [0.0, 0.01, 0.1, 0.15], # <--- indicates what are the lambda for policy learning you want to try
-		}
-......
+	options = {
+			"framework.seed": [12345, 12346, 12347, 12348, 12349], # <--- indicates the name of results folder
+       "dm_model.model.backbone": ["dfc", "dlstm", "dgru"], # <--- indicates what are the backbones for dynamics model you want to try
+       "model.backbone": ["fc", "dfc", "gru", "dgru", "lstm", "dlstm"], # <--- indicates what are the backbones for policy network you want to try
+       "train.LAMBDA": [0.0, 0.01, 0.1, 0.15], # <--- indicates what are the lambda for policy learning you want to try
+	}
 ```
 
 **Note**: you can easily add experimental options based on the hyperparameters defined in the config files. For example, do experiments with different initial learning rate:
 
 ```
-......
 if __name__ == "__main__":
-		options = {
-				"train.lr": [0.1, 0.01, 0.001],
-		}
-......
+	options = {
+			"train.lr": [0.1, 0.01, 0.001],
+	}
 ```
 
 #### Main Results for policy learning with uncertainty regularzation
